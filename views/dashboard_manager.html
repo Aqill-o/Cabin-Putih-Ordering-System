@@ -55,11 +55,21 @@
 
             <main class="container">
 
-                <!-- ANALYTICS VIEW -->
                 <div class="view-section active" id="view-analytics">
-                    <header class="hero-section">
-                        <h1>Executive Overview Analytics</h1>
-                        <p>Live aggregations synchronized with customer checkout terminals and active cash lanes.</p>
+                    <header class="hero-section" style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+                        <div>
+                            <h1>Executive Overview Analytics</h1>
+                            <p>Live aggregations synchronized with customer checkout terminals and active cash lanes.</p>
+                        </div>
+                        <div class="filter-controls-container" style="display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border);">
+                            <label class="form-label" style="margin: 0; white-space: nowrap;">Analytics Interval:</label>
+                            <select id="ddlAnalyticsInterval" class="form-control" style="width: 140px; padding: 6px 12px; margin: 0;" onchange="handleIntervalFilterChange()">
+                                <option value="weekly" selected>Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="quarters">Quarterly</option>
+                                <option value="yearly">Yearly</option>
+                            </select>
+                        </div>
                     </header>
 
                     <div class="metrics-summary-grid">
@@ -88,14 +98,21 @@
                     <div style="display: flex; flex-direction: column; gap: 32px;">
 
                         <div class="card" style="width: 100%;">
-                            <div class="card-title">Weekly Average Order Value Peak Performance (RM)</div>
+                            <div class="card-title" id="lblRevenueBarChartTitle">Weekly Average Order Value Peak Performance (RM)</div>
                             <div class="chart-container-vector" style="height: 340px; padding: 24px 40px 40px;">
                                 <svg id="svgWeeklyRevenueChart" width="100%" height="100%" viewBox="0 0 700 240" preserveAspectRatio="none" style="overflow: visible;"></svg>
                             </div>
                         </div>
 
                         <div class="card" style="width: 100%;">
-                            <div class="card-title">Revenue Share Metrics Breakdown by Product Category Group</div>
+                            <div class="card-title" id="lblSalesLineChartTitle">Weekly Total Sales Trend Performance (RM)</div>
+                            <div class="chart-container-vector" style="height: 340px; padding: 24px 40px 40px;">
+                                <svg id="svgWeeklySalesLineChart" width="100%" height="100%" viewBox="0 0 700 240" preserveAspectRatio="none" style="overflow: visible;"></svg>
+                            </div>
+                        </div>
+
+                        <div class="card" style="width: 100%;">
+                            <div class="card-title" id="lblPieChartTitle">Revenue Share Metrics Breakdown by Product Category Group</div>
                             <div class="pie-chart-container">
                                 <div class="pie-chart-left">
                                     <svg id="svgDiningTypePieChart" width="200" height="200" viewBox="0 0 100 100" style="transform: rotate(-90deg); display: block; overflow: visible;"></svg>
@@ -107,7 +124,6 @@
                     </div>
                 </div>
 
-                <!-- PERSONNEL DIRECTORY VIEW -->
                 <div class="view-section" id="view-staff">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
                         <div>
@@ -135,7 +151,6 @@
                     </div>
                 </div>
 
-                <!-- REPLENISH REQUESTS VIEW -->
                 <div class="view-section" id="view-replenish">
                     <header class="hero-section">
                         <h1>Stock Replenishment Requests</h1>
@@ -158,7 +173,6 @@
                     </div>
                 </div>
 
-                <!-- SUPPLIER PROFILES VIEW -->
                 <div class="view-section" id="view-suppliers">
                     <header class="hero-section">
                         <h1>Supplier Logistics Profile Directory</h1>
@@ -184,7 +198,6 @@
         </div>
     </div>
 
-    <!-- MODAL: REGISTER STAFF -->
     <div class="modal-overlay" id="addStaffModalOverlay">
         <div class="modal-box">
             <div class="modal-header">
@@ -225,7 +238,6 @@
         </div>
     </div>
 
-    <!-- MODAL: CONFIRM EMPLOYEE REMOVAL -->
     <div class="modal-overlay" id="deleteStaffVerificationModalOverlay">
         <div class="modal-box">
             <div class="modal-header">
@@ -254,7 +266,6 @@
         </div>
     </div>
 
-    <!-- JavaScript Modules -->
     <script src="../../scripts/manager/modules/core.js"></script>
     <script src="../../scripts/manager/modules/analytics.js"></script>
     <script src="../../scripts/manager/modules/staff.js"></script>

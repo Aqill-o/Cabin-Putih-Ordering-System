@@ -1,10 +1,14 @@
 // ============================================================
-// MANAGER ANALYTICS MODULE - KPI stats, bar chart, pie chart
+// MANAGER ANALYTICS MODULE - KPI stats, bar chart, line chart, pie chart
 // ============================================================
+
+// Tracking active filter scope context metrics globally
+let currentAnalyticsInterval = 'weekly';
 
 async function fetchExecutiveSummaryStatistics() {
     try {
-        const response = await fetch(`${API_BASE_URL}manager/dashboard_summary`);
+        // Appended custom interval query state directly onto network transactions
+        const response = await fetch(`${API_BASE_URL}manager/dashboard_summary?interval=${currentAnalyticsInterval}`);
         if (!response.ok) throw new Error('Data endpoint drop.');
         const data = await response.json();
         const metrics = data.items[0] || { gross_revenue: 0, total_tickets: 0, active_queues: 0, total_staff: 0 };
@@ -14,47 +18,84 @@ async function fetchExecutiveSummaryStatistics() {
         document.getElementById('statActiveOrders').innerText = metrics.active_queues;
         document.getElementById('statTotalStaff').innerText = metrics.total_staff;
 
+        // Synchronize display title labels text to prevent UI mismatches
+        updateChartsTextHeaderLabels();
+
+        // Render graphical vectors arrays
         await generateWeeklyRevenueBarGraph();
+        await generateWeeklySalesLineGraph();
         await generateDiningDistributionPieGraph();
     } catch (e) {
         console.error("Summary metrics failed initialization maps.", e);
     }
 }
 
+// Callback execution when filter selector adjustments shift metrics
+async function handleIntervalFilterChange() {
+    const filterSelect = document.getElementById('ddlAnalyticsInterval');
+    if (!filterSelect) return;
+    currentAnalyticsInterval = filterSelect.value;
+    await fetchExecutiveSummaryStatistics();
+}
+
+function updateChartsTextHeaderLabels() {
+    const capitalized = currentAnalyticsInterval.charAt(0).toUpperCase() + currentAnalyticsInterval.slice(1);
+    
+    document.getElementById('lblRevenueBarChartTitle').innerText = `${capitalized} Average Order Value Peak Performance (RM)`;
+    document.getElementById('lblSalesLineChartTitle').innerText = `${capitalized} Total Sales Trend Performance (RM)`;
+    document.getElementById('lblPieChartTitle').innerText = `Revenue Share Metrics Breakdown by Product Category Group (${capitalized})`;
+}
+
+// ==========================================
+// RENDER: GRAPHICAL REVENUE BAR GRAPH
+// ==========================================
 async function generateWeeklyRevenueBarGraph() {
     const svg = document.getElementById('svgWeeklyRevenueChart');
     if (!svg) return;
     svg.innerHTML = '';
 
     try {
-        const res = await fetch(`${API_BASE_URL}manager/revenue_by_day`);
+        const res = await fetch(`${API_BASE_URL}manager/revenue_by_day?interval=${currentAnalyticsInterval}`);
         const data = await res.json();
         const rows = data.items || [];
 
-        const weekDaysTemplate = [
-            { name: 'Mon', revenue: 0 }, { name: 'Tue', revenue: 0 },
-            { name: 'Wed', revenue: 0 }, { name: 'Thu', revenue: 0 },
-            { name: 'Fri', revenue: 0 }, { name: 'Sat', revenue: 0 },
-            { name: 'Sun', revenue: 0 }
-        ];
+        // Fallback default array parameters map logic if layout matches standard weekly context
+        let graphDataPoints = [];
+        
+        if (currentAnalyticsInterval === 'weekly') {
+            const weekDaysTemplate = [
+                { name: 'Mon', revenue: 0 }, { name: 'Tue', revenue: 0 },
+                { name: 'Wed', revenue: 0 }, { name: 'Thu', revenue: 0 },
+                { name: 'Fri', revenue: 0 }, { name: 'Sat', revenue: 0 },
+                { name: 'Sun', revenue: 0 }
+            ];
+            rows.forEach(item => {
+                const cleanDayName = String(item.day_name || item.time_label).trim().substring(0, 3).toLowerCase();
+                const matchIndex = weekDaysTemplate.findIndex(d => d.name.toLowerCase() === cleanDayName);
+                if (matchIndex !== -1) {
+                    weekDaysTemplate[matchIndex].revenue = parseFloat(item.daily_revenue || item.total_sales || 0);
+                }
+            });
+            graphDataPoints = weekDaysTemplate;
+        } else {
+            // Mapping values for non-weekly time metrics elements context patterns
+            graphDataPoints = rows.map(item => ({
+                name: item.time_label || item.day_name || 'Data',
+                revenue: parseFloat(item.daily_revenue || item.total_sales || 0)
+            }));
+        }
 
-        rows.forEach(item => {
-            const cleanDayName = String(item.day_name).trim().substring(0, 3).toLowerCase();
-            const matchIndex = weekDaysTemplate.findIndex(d => d.name.toLowerCase() === cleanDayName);
-            if (matchIndex !== -1) {
-                weekDaysTemplate[matchIndex].revenue = parseFloat(item.daily_revenue);
-            }
-        });
+        if (graphDataPoints.length === 0) return;
 
-        const maxRevenueValue = Math.max(...weekDaysTemplate.map(d => d.revenue), 5);
+        const maxRevenueValue = Math.max(...graphDataPoints.map(d => d.revenue), 5);
         const chartHeightBoundary = 180;
-        const totalBarsCount = weekDaysTemplate.length;
+        const totalBarsCount = graphDataPoints.length;
         const horizontalWidthStep = 700 / totalBarsCount;
 
         svg.innerHTML += `<line x1="0" y1="${chartHeightBoundary}" x2="700" y2="${chartHeightBoundary}" stroke="var(--border)" stroke-width="2"/>`;
 
-        weekDaysTemplate.forEach((day, index) => {
-            const barWidthSize = 42;
+        graphDataPoints.forEach((day, index) => {
+            const barWidthSize = Math.min(42, (600 / totalBarsCount));
             const barProportionalHeight = (day.revenue / maxRevenueValue) * chartHeightBoundary;
 
             const positionX = (index * horizontalWidthStep) + (horizontalWidthStep - barWidthSize) / 2;
@@ -79,6 +120,91 @@ async function generateWeeklyRevenueBarGraph() {
     }
 }
 
+// ==========================================
+// NEW RENDER ENGINE: SALES TREND LINE CHART
+// ==========================================
+async function generateWeeklySalesLineGraph() {
+    const svg = document.getElementById('svgWeeklySalesLineChart');
+    if (!svg) return;
+    svg.innerHTML = '';
+
+    try {
+        const res = await fetch(`${API_BASE_URL}manager/sales_trend?interval=${currentAnalyticsInterval}`);
+        const data = await res.json();
+        const rows = data.items || [];
+
+        if (rows.length === 0) {
+            svg.innerHTML = `<text x="350" y="120" fill="var(--text-muted)" text-anchor="middle">No records mapped for this specific scope configuration.</text>`;
+            return;
+        }
+
+        const dataPoints = rows.map(item => ({
+            label: item.time_label || item.day_name || 'Unit',
+            value: parseFloat(item.total_sales || item.daily_revenue || 0)
+        }));
+
+        const maxSalesValue = Math.max(...dataPoints.map(d => d.value), 10);
+        const chartHeightBoundary = 180;
+        const totalPointsCount = dataPoints.length;
+        
+        // Safety bounds check to avoid calculations dividing values by zero coordinate indices
+        const horizontalWidthStep = totalPointsCount > 1 ? 700 / (totalPointsCount - 1) : 700;
+
+        // Draw Base Axis System Layout Lines
+        svg.innerHTML += `<line x1="0" y1="${chartHeightBoundary}" x2="700" y2="${chartHeightBoundary}" stroke="var(--border)" stroke-width="2"/>`;
+
+        let pointsPathString = "";
+        let areaFillPathString = `0,${chartHeightBoundary} `;
+
+        const coordinatesMatrix = dataPoints.map((pt, index) => {
+            const positionX = index * horizontalWidthStep;
+            const proportionalHeight = (pt.value / maxSalesValue) * chartHeightBoundary;
+            const positionY = chartHeightBoundary - proportionalHeight;
+            
+            pointsPathString += `${positionX},${positionY} `;
+            areaFillPathString += `${positionX},${positionY} `;
+            return { x: positionX, y: positionY, val: pt.value, label: pt.label };
+        });
+
+        areaFillPathString += `${700},${chartHeightBoundary}`;
+
+        // Create Defs for Linear Gradients underneath vector paths
+        svg.innerHTML += `
+            <defs>
+                <linearGradient id="lineChartGradientFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--info)" stop-opacity="0.25"/>
+                    <stop offset="100%" stop-color="var(--info)" stop-opacity="0.0"/>
+                </linearGradient>
+            </defs>
+            <polygon points="${areaFillPathString}" fill="url(#lineChartGradientFill)"></polygon>
+        `;
+
+        // Output line stroke layout elements
+        svg.innerHTML += `
+            <polyline points="${pointsPathString}" fill="none" stroke="var(--info)" stroke-width="3" 
+                      style="stroke-dasharray: 1200; stroke-dashoffset: 1200; animation: lineDraw 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+            </polyline>
+        `;
+
+        // Create specific tracking node structural entities elements references loop
+        coordinatesMatrix.forEach((coord) => {
+            svg.innerHTML += `
+                <g>
+                    <circle cx="${coord.x}" cy="${coord.y}" r="5" fill="var(--bg-main)" stroke="var(--info)" stroke-width="2.5"></circle>
+                    <text x="${coord.x}" y="${chartHeightBoundary + 22}" class="chart-axis-text" text-anchor="middle">${coord.label}</text>
+                    ${coord.val > 0 ? `<text x="${coord.x}" y="${coord.y - 12}" class="chart-value-label" style="fill: var(--info); font-weight: 700;">RM ${coord.val.toFixed(2)}</text>` : ''}
+                </g>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Line trend chart execution exception layout tracks:", err);
+    }
+}
+
+// ==========================================
+// RENDER: DINING TYPE DISTRIBUTION PIE GRAPH
+// ==========================================
 async function generateDiningDistributionPieGraph() {
     const svgCircle = document.getElementById('svgDiningTypePieChart');
     const legendContainer = document.getElementById('pieChartLegendLabelsContainer');
@@ -88,11 +214,11 @@ async function generateDiningDistributionPieGraph() {
     legendContainer.innerHTML = '';
 
     try {
-        const res = await fetch(`${API_BASE_URL}manager/orders_by_dining_type`);
+        const res = await fetch(`${API_BASE_URL}manager/orders_by_dining_type?interval=${currentAnalyticsInterval}`);
         const data = await res.json();
         const records = data.items || [];
 
-        const structuralTotalSum = records.reduce((sum, current) => sum + parseFloat(current.total_count), 0);
+        const structuralTotalSum = records.reduce((sum, current) => sum + parseFloat(current.total_count || current.revenue_count || 0), 0);
 
         if (structuralTotalSum === 0) {
             legendContainer.innerHTML = '<div style="color:var(--text-muted)">No revenue logged inside data tables.</div>';
@@ -104,13 +230,11 @@ async function generateDiningDistributionPieGraph() {
 
         records.forEach((row, index) => {
             const cleanTypeName = String(row.dining_type).trim();
-            const revenueVal = parseFloat(row.total_count);
+            const revenueVal = parseFloat(row.total_count || row.revenue_count || 0);
 
             const pct = (revenueVal / structuralTotalSum) * 100;
             const colorChoice = colorPalettesPalette[index % colorPalettesPalette.length];
 
-            // Donut slice: dasharray = "slice gap", dashoffset = 25 - accumulated
-            // r=15.915 => circumference=100, so percentages map directly to dash units
             svgCircle.insertAdjacentHTML('beforeend', `
                 <circle cx="50" cy="50" r="15.915" fill="none"
                         stroke="${colorChoice}"
@@ -138,5 +262,7 @@ async function generateDiningDistributionPieGraph() {
 }
 
 window.fetchExecutiveSummaryStatistics = fetchExecutiveSummaryStatistics;
+window.handleIntervalFilterChange = handleIntervalFilterChange;
 window.generateWeeklyRevenueBarGraph = generateWeeklyRevenueBarGraph;
+window.generateWeeklySalesLineGraph = generateWeeklySalesLineGraph;
 window.generateDiningDistributionPieGraph = generateDiningDistributionPieGraph;
