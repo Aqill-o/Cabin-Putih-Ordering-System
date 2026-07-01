@@ -159,9 +159,25 @@ function removeFromCart(id) {
     renderCartUI();
 }
 
+// ============================================================
+// CART FUNCTIONALITY
+// ============================================================
+
+// Triggered when user clicks "Clear Basket" button
 function clearCart() {
+    document.getElementById('clearBasketPopupOverlay').classList.add('open');
+}
+
+// Triggered if the user clicks "Cancel" or the close button
+function closeClearBasketPopup() {
+    document.getElementById('clearBasketPopupOverlay').classList.remove('open');
+}
+
+// Triggered when the user confirms the action
+function confirmClearCart() {
     window.cartState = {};
     renderCartUI();
+    closeClearBasketPopup();
 }
 
 // ============================================================
@@ -241,7 +257,17 @@ function openCheckoutPopup() {
 }
 
 function closeCheckoutPopup() {
-    document.getElementById('checkoutPopupOverlay').classList.remove('open');
+    // 1. Remove the open class to hide the modal overlay
+    const overlay = document.getElementById('checkoutPopupOverlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+    }
+    
+    // 2. Hide the QR container so it resets cleanly for the next checkout
+    const qrContainer = document.getElementById('qrCodeContainer');
+    if (qrContainer) {
+        qrContainer.style.display = 'none';
+    }
 }
 
 // CONNECTED DYNAMIC CHECKOUT DISPATCH
@@ -366,6 +392,22 @@ function navigateFromReceipt(targetWorkspaceView) {
     window.switchView(targetWorkspaceView);
 }
 
+// Controls visibility of QR component when QR is selected
+function toggleQrPaymentView() {
+    const paymentChoice = document.getElementById('chkPaymentType').value;
+    const qrContainer = document.getElementById('qrCodeContainer');
+    
+    if (!qrContainer) return;
+
+    // Accounts for both dynamic value matched cases (like 'DuitNow QR')
+    if (paymentChoice && paymentChoice.toLowerCase().includes('qr')) {
+        qrContainer.style.display = 'block';
+    } else {
+        qrContainer.style.display = 'none';
+    }
+}
+
+
 // Export for module usage
 window.generateMenuCardHTML = generateMenuCardHTML;
 window.buildCustomerCatalogFilterInterface = buildCustomerCatalogFilterInterface;
@@ -381,3 +423,6 @@ window.openCheckoutPopup = openCheckoutPopup;
 window.closeCheckoutPopup = closeCheckoutPopup;
 window.handlePaymentCheckoutForm = handlePaymentCheckoutForm;
 window.navigateFromReceipt = navigateFromReceipt;
+window.closeClearBasketPopup = closeClearBasketPopup;
+window.confirmClearCart = confirmClearCart;
+window.toggleQrPaymentView = toggleQrPaymentView;
