@@ -4,6 +4,39 @@
 
 let currentAnalyticsInterval = 'weekly';
 
+// Shared time configuration map helpers to normalize empty metrics data
+function generateTimelineTemplate(intervalMode) {
+    if (intervalMode === 'weekly') {
+        return [
+            { key: 'mon', name: 'Mon', value: 0 },
+            { key: 'tue', name: 'Tue', value: 0 },
+            { key: 'wed', name: 'Wed', value: 0 },
+            { key: 'thu', name: 'Thu', value: 0 },
+            { key: 'fri', name: 'Fri', value: 0 },
+            { key: 'sat', name: 'Sat', value: 0 },
+            { key: 'sun', name: 'Sun', value: 0 }
+        ];
+    } else if (intervalMode === 'monthly' || intervalMode === 'quarters') {
+        // Enforce 12 calendar months for monthly configuration view
+        return [
+            { key: 'jan', name: 'Jan', value: 0 }, { key: 'feb', name: 'Feb', value: 0 },
+            { key: 'mar', name: 'Mar', value: 0 }, { key: 'apr', name: 'Apr', value: 0 },
+            { key: 'may', name: 'May', value: 0 }, { key: 'jun', name: 'Jun', value: 0 },
+            { key: 'jul', name: 'Jul', value: 0 }, { key: 'aug', name: 'Aug', value: 0 },
+            { key: 'sep', name: 'Sep', value: 0 }, { key: 'oct', name: 'Oct', value: 0 },
+            { key: 'nov', name: 'Nov', value: 0 }, { key: 'dec', name: 'Dec', value: 0 }
+        ];
+    } else if (intervalMode === 'yearly') {
+        // Strictly lock rendering to the specific explicit years required
+        return [
+            { key: '2024', name: '2024', value: 0 },
+            { key: '2025', name: '2025', value: 0 },
+            { key: '2026', name: '2026', value: 0 }
+        ];
+    }
+    return [];
+}
+
 async function fetchExecutiveSummaryStatistics() {
     try {
         const response = await fetch(`${API_BASE_URL}manager/dashboard_summary?interval=${currentAnalyticsInterval}`);
@@ -18,10 +51,8 @@ async function fetchExecutiveSummaryStatistics() {
 
         updateChartsTextHeaderLabels();
 
-        // 1. Render Full-Width Line Graph first
+        // Render timeline vectors
         await generateWeeklySalesLineGraph();
-        
-        // 2. Render Side-by-Side Charts
         await generateWeeklyRevenueBarGraph();
         await generateDiningDistributionPieGraph();
     } catch (e) {
@@ -57,37 +88,46 @@ async function generateWeeklySalesLineGraph() {
         const data = await res.json();
         const rows = data.items || [];
 
-        if (rows.length === 0) {
-            svg.innerHTML = `<text x="350" y="120" fill="var(--text-muted)" text-anchor="middle">No records returned from APEX REST source.</text>`;
-            return;
-        }
+        // Build base timeline grid template layout
+        const timelineTemplate = generateTimelineTemplate(currentAnalyticsInterval);
 
-        const dataPoints = rows.map(item => ({
-            label: item.TIME_LABEL || item.time_label || item.DAY_NAME || item.day_name || 'Unit',
-            value: parseFloat(item.TOTAL_SALES || item.total_sales || item.DAILY_REVENUE || item.daily_revenue || 0)
-        }));
+        // Map live database variables matching keys
+        rows.forEach(item => {
+            const rawLabel = String(item.TIME_LABEL || item.time_label || item.DAY_NAME || item.day_name || '').trim().toLowerCase();
+            const cleanKey = rawLabel.substring(0, 3);
+            
+            const pointIndex = timelineTemplate.findIndex(p => p.key === cleanKey || p.key === rawLabel);
+            if (pointIndex !== -1) {
+                timelineTemplate[pointIndex].value = parseFloat(item.TOTAL_SALES || item.total_sales || 0);
+            }
+        });
 
-        const maxSalesValue = Math.max(...dataPoints.map(d => d.value), 10);
+        const maxSalesValue = Math.max(...timelineTemplate.map(d => d.value), 10);
         const chartHeightBoundary = 180;
-        const totalPointsCount = dataPoints.length;
-        const horizontalWidthStep = totalPointsCount > 1 ? 700 / (totalPointsCount - 1) : 700;
+        const totalPointsCount = timelineTemplate.length;
 
-        svg.innerHTML += `<line x1="0" y1="${chartHeightBoundary}" x2="700" y2="${chartHeightBoundary}" stroke="var(--border)" stroke-width="2"/>`;
+        const svgCanvasWidth = 700;
+        const chartInlinePadding = 40;
+        const usableGraphWidth = svgCanvasWidth - (chartInlinePadding * 2);
+        const horizontalWidthStep = totalPointsCount > 1 ? usableGraphWidth / (totalPointsCount - 1) : usableGraphWidth;
+
+        // Draw Base Grid Line
+        svg.innerHTML += `<line x1="${chartInlinePadding}" y1="${chartHeightBoundary}" x2="${svgCanvasWidth - chartInlinePadding}" y2="${chartHeightBoundary}" stroke="var(--border)" stroke-width="2"/>`;
 
         let pointsPathString = "";
-        let areaFillPathString = `0,${chartHeightBoundary} `;
+        let areaFillPathString = `${chartInlinePadding},${chartHeightBoundary} `;
 
-        const coordinatesMatrix = dataPoints.map((pt, index) => {
-            const positionX = index * horizontalWidthStep;
+        const coordinatesMatrix = timelineTemplate.map((pt, index) => {
+            const positionX = chartInlinePadding + (index * horizontalWidthStep);
             const proportionalHeight = (pt.value / maxSalesValue) * chartHeightBoundary;
             const positionY = chartHeightBoundary - proportionalHeight;
             
             pointsPathString += `${positionX},${positionY} `;
             areaFillPathString += `${positionX},${positionY} `;
-            return { x: positionX, y: positionY, val: pt.value, label: pt.label };
+            return { x: positionX, y: positionY, val: pt.value, label: pt.name };
         });
 
-        areaFillPathString += `700,${chartHeightBoundary}`;
+        areaFillPathString += `${svgCanvasWidth - chartInlinePadding},${chartHeightBoundary}`;
 
         svg.innerHTML += `
             <defs>
@@ -101,13 +141,14 @@ async function generateWeeklySalesLineGraph() {
 
         svg.innerHTML += `
             <polyline points="${pointsPathString}" fill="none" stroke="var(--info)" stroke-width="3" 
-                      style="stroke-dasharray: 1200; stroke-dashoffset: 1200; animation: lineDraw 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+                      style="stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: lineDraw 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
             </polyline>
         `;
 
         coordinatesMatrix.forEach((coord) => {
             svg.innerHTML += `
                 <g>
+                    /* A visible dot element is drawn at every interval, regardless of sales activity */
                     <circle cx="${coord.x}" cy="${coord.y}" r="5" fill="var(--bg-main)" stroke="var(--info)" stroke-width="2.5"></circle>
                     <text x="${coord.x}" y="${chartHeightBoundary + 22}" class="chart-axis-text" text-anchor="middle">${coord.label}</text>
                     ${coord.val > 0 ? `<text x="${coord.x}" y="${coord.y - 12}" class="chart-value-label" style="fill: var(--info); font-weight: 700;">RM ${coord.val.toFixed(2)}</text>` : ''}
@@ -122,7 +163,7 @@ async function generateWeeklySalesLineGraph() {
 }
 
 // ==========================================
-// RENDER: GRAPHICAL REVENUE BAR GRAPH (Bottom Left Side)
+// RENDER: GRAPHICAL REVENUE BAR GRAPH (Bottom Box - Side-by-Side)
 // ==========================================
 async function generateWeeklyRevenueBarGraph() {
     const svg = document.getElementById('svgWeeklyRevenueChart');
@@ -134,57 +175,48 @@ async function generateWeeklyRevenueBarGraph() {
         const data = await res.json();
         const rows = data.items || [];
 
-        let graphDataPoints = [];
-        
-        if (currentAnalyticsInterval === 'weekly') {
-            const weekDaysTemplate = [
-                { name: 'Mon', revenue: 0 }, { name: 'Tue', revenue: 0 },
-                { name: 'Wed', revenue: 0 }, { name: 'Thu', revenue: 0 },
-                { name: 'Fri', revenue: 0 }, { name: 'Sat', revenue: 0 },
-                { name: 'Sun', revenue: 0 }
-            ];
-            rows.forEach(item => {
-                const cleanDayName = String(item.day_name || item.time_label || item.DAY_NAME || item.TIME_LABEL).trim().substring(0, 3).toLowerCase();
-                const matchIndex = weekDaysTemplate.findIndex(d => d.name.toLowerCase() === cleanDayName);
-                if (matchIndex !== -1) {
-                    weekDaysTemplate[matchIndex].revenue = parseFloat(item.daily_revenue || item.total_sales || item.DAILY_REVENUE || item.TOTAL_SALES || 0);
-                }
-            });
-            graphDataPoints = weekDaysTemplate;
-        } else {
-            graphDataPoints = rows.map(item => ({
-                name: item.time_label || item.TIME_LABEL || item.day_name || item.DAY_NAME || 'Data',
-                revenue: parseFloat(item.daily_revenue || item.total_sales || item.DAILY_REVENUE || item.TOTAL_SALES || 0)
-            }));
-        }
+        // Build baseline template
+        const timelineTemplate = generateTimelineTemplate(currentAnalyticsInterval);
 
-        if (graphDataPoints.length === 0) return;
+        // Aggregate records matching timeframe structures keys
+        rows.forEach(item => {
+            const rawLabel = String(item.time_label || item.TIME_LABEL || item.day_name || item.DAY_NAME || '').trim().toLowerCase();
+            const cleanKey = rawLabel.substring(0, 3);
+            
+            const barIndex = timelineTemplate.findIndex(b => b.key === cleanKey || b.key === rawLabel);
+            if (barIndex !== -1) {
+                timelineTemplate[barIndex].value = parseFloat(item.daily_revenue || item.DAILY_REVENUE || item.total_sales || item.TOTAL_SALES || 0);
+            }
+        });
 
-        const maxRevenueValue = Math.max(...graphDataPoints.map(d => d.revenue), 5);
+        const maxRevenueValue = Math.max(...timelineTemplate.map(d => d.value), 5);
         const chartHeightBoundary = 180;
-        const totalBarsCount = graphDataPoints.length;
-        const horizontalWidthStep = 700 / totalBarsCount;
+        const totalBarsCount = timelineTemplate.length;
+        
+        const svgCanvasWidth = 640;
+        const chartInlinePadding = 24; 
+        const usableGraphWidth = svgCanvasWidth - (chartInlinePadding * 2);
+        const horizontalWidthStep = usableGraphWidth / totalBarsCount;
 
-        svg.innerHTML += `<line x1="0" y1="${chartHeightBoundary}" x2="700" y2="${chartHeightBoundary}" stroke="var(--border)" stroke-width="2"/>`;
+        svg.innerHTML += `<line x1="${chartInlinePadding}" y1="${chartHeightBoundary}" x2="${svgCanvasWidth - chartInlinePadding}" y2="${chartHeightBoundary}" stroke="var(--border)" stroke-width="2"/>`;
 
-        graphDataPoints.forEach((day, index) => {
-            const barWidthSize = Math.min(42, (600 / totalBarsCount));
-            const barProportionalHeight = (day.revenue / maxRevenueValue) * chartHeightBoundary;
+        timelineTemplate.forEach((day, index) => {
+            const barWidthSize = Math.min(38, horizontalWidthStep * 0.6);
+            const barProportionalHeight = (day.value / maxRevenueValue) * chartHeightBoundary;
 
-            const positionX = (index * horizontalWidthStep) + (horizontalWidthStep - barWidthSize) / 2;
+            const positionX = chartInlinePadding + (index * horizontalWidthStep) + (horizontalWidthStep - barWidthSize) / 2;
             const positionY = chartHeightBoundary - barProportionalHeight;
 
             svg.innerHTML += `
                 <g>
                     <rect x="${positionX}" y="${positionY}" width="${barWidthSize}" height="${barProportionalHeight}" 
-                          fill="var(--amber)" opacity="${day.revenue > 0 ? '1' : '0.25'}" rx="6" 
+                          fill="var(--amber)" opacity="${day.value > 0 ? '1' : '0.15'}" rx="5" 
                           style="animation: barGrow 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-                                 animation-delay: ${index * 0.05}s; 
-                                 transform-origin: bottom; 
+                                 animation-origin: bottom; 
                                  transform: scaleY(0);">
                     </rect>
                     <text x="${positionX + (barWidthSize / 2)}" y="${chartHeightBoundary + 22}" class="chart-axis-text" text-anchor="middle">${day.name}</text>
-                    ${day.revenue > 0 ? `<text x="${positionX + (barWidthSize / 2)}" y="${positionY - 10}" class="chart-value-label">RM ${day.revenue.toFixed(2)}</text>` : ''}
+                    ${day.value > 0 ? `<text x="${positionX + (barWidthSize / 2)}" y="${positionY - 10}" class="chart-value-label">RM ${day.value.toFixed(2)}</text>` : ''}
                 </g>
             `;
         });
@@ -194,7 +226,7 @@ async function generateWeeklyRevenueBarGraph() {
 }
 
 // ==========================================
-// RENDER: DINING TYPE DISTRIBUTION PIE GRAPH (Bottom Right Side)
+// RENDER: DINING TYPE DISTRIBUTION PIE GRAPH
 // ==========================================
 async function generateDiningDistributionPieGraph() {
     const svgCircle = document.getElementById('svgDiningTypePieChart');
@@ -212,7 +244,8 @@ async function generateDiningDistributionPieGraph() {
         const structuralTotalSum = records.reduce((sum, current) => sum + parseFloat(current.total_count || current.revenue_count || current.TOTAL_COUNT || 0), 0);
 
         if (structuralTotalSum === 0) {
-            legendContainer.innerHTML = '<div style="color:var(--text-muted)">No revenue logged inside data tables.</div>';
+            legendContainer.innerHTML = '<div style="color:var(--text-muted); padding: 20px;">No revenue logged for this timeline.</div>';
+            svgCircle.innerHTML = `<circle cx="50" cy="50" r="15.915" fill="none" stroke="var(--border)" stroke-width="31.83"></circle>`;
             return;
         }
 
