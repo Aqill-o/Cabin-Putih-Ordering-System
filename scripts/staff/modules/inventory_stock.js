@@ -1,12 +1,16 @@
 // ============================================================
 // STOCK MODULE - Inventory Stock Room functionality
 // ============================================================
+
 function renderInventoryStockroomManagerTable() {
     const tableBody = document.getElementById('inventoryStockTableBody');
     if (!tableBody) return;
 
     tableBody.innerHTML = window.localCachedMasterMenuCatalog.map(item => {
-        const qty = parseInt(item.item_qty || 0);
+        const qty = parseInt(item.item_qty || item.ITEM_QTY || 0);
+        const itemId = item.item_id || item.ITEM_ID || '';
+        const itemName = item.item_name || item.ITEM_NAME || '';
+        
         let statusPill = `<span class="status-pill-static success">Healthy</span>`;
         if (qty <= 0) {
             statusPill = `<span class="status-pill-static danger">OUT OF STOCK</span>`;
@@ -16,19 +20,46 @@ function renderInventoryStockroomManagerTable() {
 
         return `
             <tr>
-                <td class="history-order-id">${item.item_id}</td>
-                <td><strong>${item.item_name}</strong></td>
+                <td class="history-order-id">${itemId}</td>
+                <td><strong>${itemName}</strong></td>
                 <td><span style="font-weight:700; color:var(--amber);">${qty} units remaining</span></td>
                 <td>${statusPill}</td>
                 <td style="text-align:right;">
-                    <button type="button" class="btn-reorder" onclick="dispatchStockReplenishmentRequest('${item.item_id}', '${item.item_name.replace(/'/g, "\\'")}')">Request Stock</button>
+                    <button type="button" class="btn-reorder" onclick="dispatchStockReplenishmentRequest('${itemId}', '${itemName.replace(/'/g, "\\'")}')">
+                        Request Stock
+                    </button>
                 </td>
             </tr>`;
     }).join('');
 }
 
-function dispatchStockReplenishmentRequest(itemId, name) {
-    alert(`Replenishment notification payload successfully transmitted to Manager for item: ${itemId}`);
+async function dispatchStockReplenishmentRequest(itemId, name) {
+    try {
+        // Post explicit notification logs onto ORDS payload mapping arrays
+        const response = await fetch(`${API_BASE_URL}manager/replenish_alerts`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                item_id: itemId,
+                item_name: name,
+                requested_by: sessionStorage.getItem('staff_name') || 'Floor Crew'
+            })
+        });
+
+        if (response.ok) {
+            // Uses global workspace notifications framework
+            if (typeof showToastNotification === 'function') {
+                showToastNotification(`Replenishment request for ${name} sent to Manager!`);
+            } else {
+                alert(`Replenishment notification for ${name} successfully logged in Manager Node.`);
+            }
+        } else {
+            throw new Error('Database log reject context.');
+        }
+    } catch (err) {
+        console.error("Alert broadcast drop:", err);
+        alert("Failed to deliver adjustment alert request to database index.");
+    }
 }
 
 // Export for module usage

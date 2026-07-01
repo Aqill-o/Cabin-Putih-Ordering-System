@@ -4,7 +4,6 @@
 
 let currentAnalyticsInterval = 'weekly';
 
-// Shared time configuration map helpers to normalize empty metrics data
 function generateTimelineTemplate(intervalMode) {
     if (intervalMode === 'weekly') {
         return [
@@ -17,7 +16,6 @@ function generateTimelineTemplate(intervalMode) {
             { key: 'sun', name: 'Sun', value: 0 }
         ];
     } else if (intervalMode === 'monthly' || intervalMode === 'quarters') {
-        // Enforce 12 calendar months for monthly configuration view
         return [
             { key: 'jan', name: 'Jan', value: 0 }, { key: 'feb', name: 'Feb', value: 0 },
             { key: 'mar', name: 'Mar', value: 0 }, { key: 'apr', name: 'Apr', value: 0 },
@@ -27,7 +25,6 @@ function generateTimelineTemplate(intervalMode) {
             { key: 'nov', name: 'Nov', value: 0 }, { key: 'dec', name: 'Dec', value: 0 }
         ];
     } else if (intervalMode === 'yearly') {
-        // Strictly lock rendering to the specific explicit years required
         return [
             { key: '2024', name: '2024', value: 0 },
             { key: '2025', name: '2025', value: 0 },
@@ -51,7 +48,6 @@ async function fetchExecutiveSummaryStatistics() {
 
         updateChartsTextHeaderLabels();
 
-        // Render timeline vectors
         await generateWeeklySalesLineGraph();
         await generateWeeklyRevenueBarGraph();
         await generateDiningDistributionPieGraph();
@@ -75,9 +71,6 @@ function updateChartsTextHeaderLabels() {
     document.getElementById('lblPieChartTitle').innerText = `Revenue Share Metrics Breakdown (${capitalized})`;
 }
 
-// ==========================================
-// RENDER ENGINE: SALES TREND LINE CHART (Top, Full Screen Width)
-// ==========================================
 async function generateWeeklySalesLineGraph() {
     const svg = document.getElementById('svgWeeklySalesLineChart');
     if (!svg) return;
@@ -88,10 +81,8 @@ async function generateWeeklySalesLineGraph() {
         const data = await res.json();
         const rows = data.items || [];
 
-        // Build base timeline grid template layout
         const timelineTemplate = generateTimelineTemplate(currentAnalyticsInterval);
 
-        // Map live database variables matching keys
         rows.forEach(item => {
             const rawLabel = String(item.TIME_LABEL || item.time_label || item.DAY_NAME || item.day_name || '').trim().toLowerCase();
             const cleanKey = rawLabel.substring(0, 3);
@@ -111,7 +102,6 @@ async function generateWeeklySalesLineGraph() {
         const usableGraphWidth = svgCanvasWidth - (chartInlinePadding * 2);
         const horizontalWidthStep = totalPointsCount > 1 ? usableGraphWidth / (totalPointsCount - 1) : usableGraphWidth;
 
-        // Draw Base Grid Line
         svg.innerHTML += `<line x1="${chartInlinePadding}" y1="${chartHeightBoundary}" x2="${svgCanvasWidth - chartInlinePadding}" y2="${chartHeightBoundary}" stroke="var(--border)" stroke-width="2"/>`;
 
         let pointsPathString = "";
@@ -148,7 +138,6 @@ async function generateWeeklySalesLineGraph() {
         coordinatesMatrix.forEach((coord) => {
             svg.innerHTML += `
                 <g>
-                    /* A visible dot element is drawn at every interval, regardless of sales activity */
                     <circle cx="${coord.x}" cy="${coord.y}" r="5" fill="var(--bg-main)" stroke="var(--info)" stroke-width="2.5"></circle>
                     <text x="${coord.x}" y="${chartHeightBoundary + 22}" class="chart-axis-text" text-anchor="middle">${coord.label}</text>
                     ${coord.val > 0 ? `<text x="${coord.x}" y="${coord.y - 12}" class="chart-value-label" style="fill: var(--info); font-weight: 700;">RM ${coord.val.toFixed(2)}</text>` : ''}
@@ -162,9 +151,6 @@ async function generateWeeklySalesLineGraph() {
     }
 }
 
-// ==========================================
-// RENDER: GRAPHICAL REVENUE BAR GRAPH (Bottom Box - Side-by-Side)
-// ==========================================
 async function generateWeeklyRevenueBarGraph() {
     const svg = document.getElementById('svgWeeklyRevenueChart');
     if (!svg) return;
@@ -175,10 +161,8 @@ async function generateWeeklyRevenueBarGraph() {
         const data = await res.json();
         const rows = data.items || [];
 
-        // Build baseline template
         const timelineTemplate = generateTimelineTemplate(currentAnalyticsInterval);
 
-        // Aggregate records matching timeframe structures keys
         rows.forEach(item => {
             const rawLabel = String(item.time_label || item.TIME_LABEL || item.day_name || item.DAY_NAME || '').trim().toLowerCase();
             const cleanKey = rawLabel.substring(0, 3);
@@ -212,7 +196,7 @@ async function generateWeeklyRevenueBarGraph() {
                     <rect x="${positionX}" y="${positionY}" width="${barWidthSize}" height="${barProportionalHeight}" 
                           fill="var(--amber)" opacity="${day.value > 0 ? '1' : '0.15'}" rx="5" 
                           style="animation: barGrow 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-                                 animation-origin: bottom; 
+                                 transform-origin: bottom; 
                                  transform: scaleY(0);">
                     </rect>
                     <text x="${positionX + (barWidthSize / 2)}" y="${chartHeightBoundary + 22}" class="chart-axis-text" text-anchor="middle">${day.name}</text>
@@ -225,9 +209,6 @@ async function generateWeeklyRevenueBarGraph() {
     }
 }
 
-// ==========================================
-// RENDER: DINING TYPE DISTRIBUTION PIE GRAPH
-// ==========================================
 async function generateDiningDistributionPieGraph() {
     const svgCircle = document.getElementById('svgDiningTypePieChart');
     const legendContainer = document.getElementById('pieChartLegendLabelsContainer');

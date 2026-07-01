@@ -26,7 +26,16 @@ async function renderTrackerSection() {
         }
 
         liveTrackerContainer.innerHTML = activeOrdersList.map(order => {
-            const status = order.order_status ? order.order_status.trim().toLowerCase() : 'pending';
+            // Guarding uppercase vs lowercase state parameters returned from Oracle APEX
+            const rawStatus = order.ORDER_STATUS || order.order_status || 'pending';
+            const status = rawStatus.trim().toLowerCase();
+
+            const orderId = order.ORDER_ID || order.order_id || '';
+            const orderDate = order.ORDER_DATE || order.order_date || '';
+            const diningType = order.DINING_TYPE || order.dining_type || '';
+            const totalAmount = order.TOTAL_AMOUNT || order.total_amount || 0;
+            const payType = order.PAY_TYPE || order.pay_type || '';
+            const summary = order.SUMMARY || order.summary || 'Items processing...';
 
             let progressClass = 'fill-received';
             let receivedActive = 'done', preparingActive = '', readyActive = '', completedActive = '';
@@ -46,15 +55,15 @@ async function renderTrackerSection() {
             }
 
             return `
-                <div class="tracker-card" id="order-card-${order.order_id}">
+                <div class="tracker-card" id="order-card-${orderId}">
                     <div class="tracker-header">
                         <div>
-                            <div class="order-id-badge">${order.order_id}</div>
-                            <div class="order-date-meta">${order.order_date} &bull; ${order.dining_type}</div>
+                            <div class="order-id-badge">${orderId}</div>
+                            <div class="order-date-meta">${orderDate} &bull; ${diningType}</div>
                         </div>
                         <div>
-                            <div class="order-price-badge">RM ${parseFloat(order.total_amount).toFixed(2)}</div>
-                            <div class="order-payment-type">${order.pay_type}</div>
+                            <div class="order-price-badge">RM ${parseFloat(totalAmount).toFixed(2)}</div>
+                            <div class="order-payment-type">${payType}</div>
                         </div>
                     </div>
                     <div class="progress-timeline">
@@ -64,10 +73,13 @@ async function renderTrackerSection() {
                         <div class="timeline-node ${readyActive}"><div class="node-dot"></div><span class="node-label">Ready</span></div>
                         <div class="timeline-node ${completedActive}"><div class="node-dot"></div><span class="node-label">Completed</span></div>
                     </div>
-                    <div class="order-summary-items">${order.summary || 'Items processing...'}</div>
+                    <div class="order-summary-items">${summary}</div>
                     <div class="tracker-footer-actions">
                         <span style="font-size:0.85rem; color:var(--text-muted);">Status tracking linked to live terminal...</span>
-                        ${status === 'pending' ? `<button type="button" class="btn-cancel-order" onclick="cancelTrackerOrder('${order.order_id}')">Cancel Order</button>` : ''}
+                        <!-- FIX: Allows order cancellation if the status is either 'pending' or 'received' -->
+                        ${status === 'pending' || status === 'received' ? `
+                            <button type="button" class="btn-cancel-order" onclick="cancelTrackerOrder('${orderId}')">Cancel Order</button>
+                        ` : ''}
                     </div>
                 </div>`;
         }).join('');
@@ -90,26 +102,32 @@ async function cancelTrackerOrder(orderId) {
             if (!response.ok) throw new Error('Cancellation request broken.');
             const res = await response.json();
 
-            if (res.status === 'success') {
+            // Handle potential uppercase object fields returned from Oracle Rest Data Services
+            const statusSuccess = res.status === 'success' || res.STATUS === 'success';
+
+            if (statusSuccess) {
                 renderTrackerSection();
 
                 const alertSlot = document.getElementById('trackerAlertNotificationSlot');
-                alertSlot.innerHTML = `
-                    <div class="alert-toast danger" id="cancellationToastNotification">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                        <span><strong>Order Cancelled!</strong> Transaction reference ${orderId} was removed from database queues.</span>
-                    </div>`;
+                if (alertSlot) {
+                    alertSlot.innerHTML = `
+                        <div class="alert-toast danger" id="cancellationToastNotification">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                            <span><strong>Order Cancelled!</strong> Transaction reference ${orderId} was removed from database queues.</span>
+                        </div>`;
+                }
 
                 setTimeout(() => {
                     const cancelToast = document.getElementById('cancellationToastNotification');
                     if (cancelToast) {
+                        cancelToast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                         cancelToast.style.opacity = '0';
                         cancelToast.style.transform = 'translateY(-10px)';
                         setTimeout(() => cancelToast.remove(), 300);
                     }
                 }, 4000);
             } else {
-                alert(res.message || "Failed to cancel order.");
+                alert(res.message || res.MESSAGE || "Failed to cancel order.");
             }
         } catch (err) {
             alert("Error sending cancellation request to DB backend module.");
