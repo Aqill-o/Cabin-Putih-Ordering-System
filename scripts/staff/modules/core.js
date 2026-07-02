@@ -63,8 +63,7 @@ async function downloadOperationalDataFromDatabase() {
             window.localCachedMasterMenuCatalog = menuData.items || [];
         }
 
-        const orderRes = await fetch(`${API_BASE_URL}customer/active_orders`, { method: 'GET' });
-        if (orderRes.ok) {
+            const orderRes = await fetch(`${API_BASE_URL}staff/all_orders`, { method: 'GET' });        if (orderRes.ok) {
             const orderData = await orderRes.json();
             window.localCachedMasterOrdersArray = orderData.items || [];
 
