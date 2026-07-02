@@ -4,52 +4,53 @@
 
 /* ---- HOME PAGE WELCOME BANNER ---- */
 .welcome-promo-banner {
-    background: linear-gradient(135deg, #1e2942 0%, #131a2a 100%);
+    background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 28px;
-    padding: 40px;
-    margin-bottom: 48px;
+    border-radius: 24px;
+    padding: 56px;
+    margin-bottom: 56px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-medium);
 }
 
 .welcome-promo-banner::before {
-    content: '☕';
+    content: '';
     position: absolute;
-    right: -20px;
-    bottom: -30px;
-    font-size: 12rem;
-    opacity: 0.08;
-    transform: rotate(-15deg);
+    right: -100px;
+    bottom: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(217, 119, 6, 0.06) 0%, transparent 70%);
+    border-radius: 50%;
 }
 
-.promo-content h2 { font-size: 2rem; font-weight: 700; margin-bottom: 12px; color: var(--text-primary); letter-spacing: -0.01em; }
-.promo-content p { color: var(--text-secondary); font-size: 1.05rem; max-width: 520px; line-height: 1.6; }
+.promo-content h2 { font-size: 2.25rem; font-weight: 700; margin-bottom: 16px; color: var(--text-primary); letter-spacing: -0.02em; }
+.promo-content p { color: var(--text-secondary); font-size: 1.1rem; max-width: 560px; line-height: 1.6; }
 
-.section-heading-row { margin-bottom: 24px; }
-.section-title { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; }
+.section-heading-row { margin-bottom: 32px; }
+.section-title { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
 
 .center-button-container {
     display: flex;
     justify-content: center;
-    margin-top: 40px;
+    margin-top: 48px;
 }
 
 .btn-promo-action {
     background-color: var(--amber);
-    color: #0b0f19;
+    color: #FFFFFF;
     border: none;
     border-radius: 99px;
-    padding: 14px 36px;
+    padding: 16px 40px;
     font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
     transition: var(--transition);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.2);
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(217, 119, 6, 0.2);
 }
 
 .btn-promo-action:hover {
@@ -59,6 +60,6 @@
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 768px) {
-    .welcome-promo-banner { padding: 24px; }
+    .welcome-promo-banner { padding: 32px; }
     .welcome-promo-banner::before { display: none; }
 }

@@ -5,7 +5,7 @@
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(5, 7, 12, 0.8);
+    background-color: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     z-index: 2000;
     display: flex;
@@ -20,13 +20,13 @@
 .modal-overlay.open { opacity: 1; pointer-events: all; }
 
 .modal-box {
-    background-color: var(--bg-surface);
+    background-color: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 28px;
+    border-radius: 24px;
     width: 100%;
     max-width: 520px;
-    padding: 32px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    padding: 36px;
+    box-shadow: var(--shadow-medium);
     transform: scale(0.95) translateY(15px);
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     max-height: 90vh;
@@ -39,21 +39,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
 }
 
 .modal-title {
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: 700;
     letter-spacing: -0.01em;
+    color: var(--text-primary);
 }
 
 .modal-close-btn {
     background-color: var(--bg-pill);
     border: none;
     color: var(--text-secondary);
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -68,36 +69,36 @@
 .checkout-summary-scroll {
     background-color: var(--bg-main);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    max-height: 200px;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    max-height: 220px;
     overflow-y: auto;
 }
 
 .summary-line {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-secondary);
-    padding: 6px 0;
+    padding: 8px 0;
 }
 
 .summary-line.total {
     border-top: 1px solid var(--border);
-    padding-top: 12px;
-    margin-top: 8px;
+    padding-top: 14px;
+    margin-top: 10px;
     font-weight: 700;
     color: var(--amber);
-    font-size: 1.05rem;
+    font-size: 1.1rem;
 }
 
 .btn-submit-order {
     background-color: var(--amber);
-    color: #0b0f19;
+    color: #FFFFFF;
     border: none;
     border-radius: 99px;
-    padding: 14px;
+    padding: 16px;
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
@@ -113,13 +114,13 @@
 
 /* ---- SUCCESS RECEIPT POPUP MODAL ---- */
 .receipt-modal-box {
-    background-color: var(--bg-surface);
+    background-color: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 28px;
+    border-radius: 24px;
     width: 100%;
-    max-width: 460px;
-    padding: 36px;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+    max-width: 480px;
+    padding: 44px;
+    box-shadow: var(--shadow-medium);
     text-align: center;
     transform: scale(0.95) translateY(15px);
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -128,41 +129,41 @@
 .modal-overlay.open .receipt-modal-box { transform: scale(1) translateY(0); }
 
 .receipt-success-icon {
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     background-color: var(--success-faint);
     color: var(--success);
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .receipt-order-id {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 800;
     color: var(--amber);
-    margin: 4px 0 20px;
+    margin: 6px 0 24px;
     letter-spacing: -0.01em;
 }
 
 .receipt-paper-frame {
     background-color: var(--bg-main);
     border: 1px dashed var(--border);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 28px;
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 32px;
     text-align: left;
 }
 
 .receipt-row {
     display: flex;
     justify-content: space-between;
-    font-size: 0.88rem;
+    font-size: 0.92rem;
     color: var(--text-secondary);
-    padding: 6px 0;
+    padding: 8px 0;
 }
 
-.receipt-divider { border: none; border-top: 1px dashed var(--border); margin: 12px 0; }
-.receipt-row.total { font-weight: 700; color: var(--text-primary); font-size: 1.05rem; }
+.receipt-divider { border: none; border-top: 1px dashed var(--border); margin: 14px 0; }
+.receipt-row.total { font-weight: 700; color: var(--text-primary); font-size: 1.1rem; }

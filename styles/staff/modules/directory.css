@@ -1,0 +1,52 @@
+/* ============================================================
+   DIRECTORY STYLES - Menu directory CRUD table
+   ============================================================ */
+
+/* ---- INTERACTIVE DIRECTORY TABLE COMPONENT ROWS ---- */
+.btn-table-row-link {
+    background: transparent;
+    border: none;
+    color: var(--amber);
+    font-family: var(--font-family);
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+    padding: 4px 0;
+    display: inline-block;
+    transition: var(--transition);
+}
+
+.btn-table-row-link:hover {
+    color: var(--amber-hover);
+    text-decoration: underline;
+}
+
+/* ---- MANAGEMENT COMPONENT DATATABLES ---- */
+.history-table-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    overflow-x: auto;
+    box-shadow: var(--shadow-soft);
+}
+.history-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; text-align: left; }
+.history-table th { padding: 16px; color: var(--text-secondary); border-bottom: 2px solid var(--border); font-weight: 600; text-transform: uppercase; font-size: 0.76rem; letter-spacing: 0.05em; }
+.history-table td { padding: 18px 16px; border-bottom: 1px solid var(--border); color: var(--text-primary); vertical-align: middle; }
+.history-table tr:last-child td { border-bottom: none; }
+.history-order-id { font-family: monospace; color: var(--amber); font-weight: 700; font-size: 0.98rem; }
+.history-items-list { color: var(--text-secondary); font-size: 0.88rem; }
+
+.btn-reorder {
+    background-color: var(--bg-pill);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.btn-reorder:hover { border-color: var(--amber); color: var(--amber); background-color: var(--amber-faint); }

@@ -2,31 +2,31 @@
    PROFILE STYLES - Profile form and account settings
    ============================================================ */
 
-.profile-layout { max-width: 640px; margin: 0 auto; }
+.profile-layout { max-width: 680px; margin: 0 auto; }
 
 .profile-card {
-    background-color: var(--bg-surface);
+    background-color: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 32px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: var(--shadow-soft);
 }
 
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 20px;
+    gap: 24px;
+    margin-bottom: 24px;
 }
 
-.form-group { margin-bottom: 20px; }
+.form-group { margin-bottom: 24px; }
 
 .form-label {
     display: block;
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -35,43 +35,44 @@
     width: 100%;
     background-color: var(--bg-main);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 10px;
     color: var(--text-primary);
-    padding: 12px 16px;
+    padding: 14px 18px;
     font-family: var(--font-family);
     font-size: 0.95rem;
     outline: none;
     transition: var(--transition);
+    box-shadow: var(--shadow-soft);
 }
 
 .form-control:focus {
     border-color: var(--amber);
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
 }
 
 .btn-save-profile {
     background-color: var(--amber);
-    color: #0b0f19;
+    color: #FFFFFF;
     border: none;
     border-radius: 99px;
-    padding: 12px 32px;
+    padding: 16px 36px;
     font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
     transition: var(--transition);
     width: 100%;
-    margin-top: 8px;
+    margin-top: 12px;
 }
 
 .btn-save-profile:hover { background-color: var(--amber-hover); }
 
 .account-meta-footer {
-    margin-top: 24px;
-    padding-top: 20px;
+    margin-top: 28px;
+    padding-top: 24px;
     border-top: 1px solid var(--border);
     display: flex;
     justify-content: space-between;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
 }
 

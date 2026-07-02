@@ -1,7 +1,7 @@
 /* ============================================================
-   CABIN PUTIH STAFF OPERATIONAL THEME
+   SCANDI-MINIMALIST LIGHT THEME - Staff Operations
    Main stylesheet - imports all modular CSS components
-   Palette: Midnight Navy (#0B0F19) + Warm Amber (#F59E0B)
+   Palette: Soft Off-White + Warm Amber (#D97706)
    ============================================================ */
 
 /* Core: Variables, reset, sidebar, base layout */
@@ -10,7 +10,19 @@
 /* Register: POS catalog, filters, cart panel */
 @import url('./modules/register.css');
 
-/* Shared: Tables, buttons, status pills, tracker cards */
+/* Directory: Menu directory CRUD table */
+@import url('./modules/directory.css');
+
+/* Hub: Active orders, kitchen tracker cards */
+@import url('./modules/hub.css');
+
+/* Stock: Inventory stock room table */
+@import url('./modules/stock.css');
+
+/* Past: Past orders archive table */
+@import url('./modules/past.css');
+
+/* Shared: Status pills, loading state */
 @import url('./modules/shared.css');
 
 /* Modals: Checkout, receipt, preview, CRUD popups */

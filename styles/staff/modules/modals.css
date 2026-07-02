@@ -3,12 +3,12 @@
    ============================================================ */
 
 /* ---- POPUP OVERLAY ACTION MODALS ---- */
-.modal-overlay { position: fixed; inset: 0; background-color: rgba(5, 7, 12, 0.8); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px; }
+.modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px; }
 .modal-overlay.open { display: flex; opacity: 1; pointer-events: all; }
-.modal-box { background-color: var(--bg-surface); border: 1px solid var(--border); border-radius: 24px; width: 100%; padding: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto; }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.modal-title { font-size: 1.25rem; font-weight: 700; }
-.modal-close-btn { background-color: var(--bg-pill); border: none; color: var(--text-secondary); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.modal-box { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; width: 100%; padding: 32px; box-shadow: var(--shadow-medium); max-height: 90vh; overflow-y: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.modal-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }
+.modal-close-btn { background-color: var(--bg-pill); border: none; color: var(--text-secondary); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: var(--transition); }
 .modal-close-btn:hover { color: var(--text-primary); background-color: var(--border); }
-.btn-submit-order { background-color: var(--amber); color: #0b0f19; border: none; border-radius: 99px; padding: 12px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: var(--transition); width: 100%; display: flex; align-items: center; justify-content: center; }
+.btn-submit-order { background-color: var(--amber); color: #FFFFFF; border: none; border-radius: 99px; padding: 14px; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: var(--transition); width: 100%; display: flex; align-items: center; justify-content: center; }
 .btn-submit-order:hover { background-color: var(--amber-hover); }

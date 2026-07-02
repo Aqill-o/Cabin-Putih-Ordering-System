@@ -1,0 +1,8 @@
+/* ============================================================
+   STOCK STYLES - Inventory stock room table
+   ============================================================ */
+
+/* Stock room view reuses the shared .history-table-card and
+   .history-table components defined in directory.css.
+   Section-specific stock room styles are added here as the
+   inventory management interface grows. */
