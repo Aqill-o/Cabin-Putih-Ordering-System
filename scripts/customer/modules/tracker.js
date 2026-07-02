@@ -99,13 +99,18 @@ async function cancelTrackerOrder(orderId) {
                 body: new URLSearchParams({ order_id: orderId })
             });
 
-            if (!response.ok) throw new Error('Cancellation request broken.');
-            const res = await response.json();
+            // Parse JSON even if status code is 400 or 500 to capture the DB error message
+            let res;
+            try {
+                res = await response.json();
+            } catch (jsonErr) {
+                // Fallback if backend returned raw text or crashed entirely
+                if (!response.ok) throw new Error('Server returned a non-JSON error response.');
+            }
 
-            // Handle potential uppercase object fields returned from Oracle Rest Data Services
-            const statusSuccess = res.status === 'success' || res.STATUS === 'success';
+            const statusSuccess = res && (res.status === 'success' || res.STATUS === 'success');
 
-            if (statusSuccess) {
+            if (statusSuccess && response.ok) {
                 renderTrackerSection();
 
                 const alertSlot = document.getElementById('trackerAlertNotificationSlot');
@@ -127,9 +132,12 @@ async function cancelTrackerOrder(orderId) {
                     }
                 }, 4000);
             } else {
-                alert(res.message || res.MESSAGE || "Failed to cancel order.");
+                // Safely show the real reason from Oracle APEX/ORDS
+                const errorMsg = res?.message || res?.MESSAGE || "Order cannot be cancelled at this stage.";
+                alert(errorMsg);
             }
         } catch (err) {
+            console.error("Cancellation system failure:", err);
             alert("Error sending cancellation request to DB backend module.");
         }
     }
