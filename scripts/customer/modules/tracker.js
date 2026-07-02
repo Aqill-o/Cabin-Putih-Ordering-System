@@ -54,6 +54,18 @@ async function renderTrackerSection() {
                 completedActive = 'done';
             }
 
+            // Cache lightweight order details so the Print Receipt button can
+            // reuse the shared printOrderReceiptFromCache() helper in menu.js
+            window.__receiptCache = window.__receiptCache || {};
+            window.__receiptCache[orderId] = {
+                orderId: orderId,
+                date: orderDate,
+                diningType: diningType,
+                payType: payType,
+                total: totalAmount,
+                summary: summary
+            };
+
             return `
                 <div class="tracker-card" id="order-card-${orderId}">
                     <div class="tracker-header">
@@ -76,10 +88,13 @@ async function renderTrackerSection() {
                     <div class="order-summary-items">${summary}</div>
                     <div class="tracker-footer-actions">
                         <span style="font-size:0.85rem; color:var(--text-muted);">Status tracking linked to live terminal...</span>
-                        <!-- FIX: Allows order cancellation if the status is either 'pending' or 'received' -->
-                        ${status === 'pending' || status === 'received' ? `
-                            <button type="button" class="btn-cancel-order" onclick="cancelTrackerOrder('${orderId}')">Cancel Order</button>
-                        ` : ''}
+                        <div style="display:flex; gap:8px;">
+                            <button type="button" class="btn-reorder" onclick="printOrderReceiptFromCache('${orderId}')">Print Receipt</button>
+                            <!-- FIX: Allows order cancellation if the status is either 'pending' or 'received' -->
+                            ${status === 'pending' || status === 'received' ? `
+                                <button type="button" class="btn-cancel-order" onclick="cancelTrackerOrder('${orderId}')">Cancel Order</button>
+                            ` : ''}
+                        </div>
                     </div>
                 </div>`;
         }).join('');

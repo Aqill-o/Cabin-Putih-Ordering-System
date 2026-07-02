@@ -334,6 +334,7 @@ async function handlePaymentCheckoutForm(event) {
 
         if (responseJson.status === 'success') {
             const parsedID = responseJson.order_id || 'ORD';
+            const now = new Date();
 
             document.getElementById('receiptOrderNum').textContent = parsedID;
             document.getElementById('receiptItemsBreakdownBox').innerHTML = receiptBoxInnerHtml + `
@@ -342,6 +343,23 @@ async function handlePaymentCheckoutForm(event) {
                 <div class="receipt-row"><span>Payment</span><span>${paymentChoice}</span></div>
                 <div class="receipt-divider"></div>
                 <div class="receipt-row total"><span>Total Paid</span><span>RM ${totalBillPrice.toFixed(2)}</span></div>`;
+
+            // Cache the full itemized breakdown (name, qty, price) so the
+            // Print Receipt button can produce a real line-by-line receipt.
+            window.__receiptCache = window.__receiptCache || {};
+            window.__receiptCache[parsedID] = {
+                orderId: parsedID,
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                diningType: diningChoice,
+                payType: paymentChoice,
+                total: totalBillPrice,
+                items: keys.map(id => ({
+                    name: window.cartState[id].name,
+                    qty: window.cartState[id].qty,
+                    price: window.cartState[id].price
+                }))
+            };
 
             // Update stock
             for (let item of payloadItemsArray) {
@@ -392,6 +410,166 @@ function navigateFromReceipt(targetWorkspaceView) {
     window.switchView(targetWorkspaceView);
 }
 
+// ============================================================
+// RECEIPT PRINTING (shared across Checkout, Order Tracker, Order History)
+// ============================================================
+
+// Cache used by Order Tracker / Order History cards, since those only have
+// a summary string rather than a full itemized price breakdown.
+window.__receiptCache = window.__receiptCache || {};
+
+function buildReceiptHTML(details) {
+    const dateStr = details.date || '';
+    const timeStr = details.time || '';
+
+    let itemsHtml;
+    if (details.items && details.items.length > 0) {
+        // Full breakdown available (checkout time only) - name, qty x unit price, line total
+        itemsHtml = details.items.map(it => `
+            <div class="r-item">
+                <div class="r-item-row"><span>${it.name}</span><span>RM${(it.price * it.qty).toFixed(2)}</span></div>
+                <div class="r-item-sub">${it.qty} x RM${it.price.toFixed(2)}</div>
+            </div>`).join('');
+    } else {
+        // Fallback (Tracker / History): only name + qty exist in the DB summary,
+        // no per-item price is available, so only that is shown.
+        const parsedItems = (details.summary || '').split(',').map(s => s.trim()).filter(Boolean);
+        itemsHtml = parsedItems.map(entry => `
+            <div class="r-item">
+                <div class="r-item-row"><span>${entry}</span></div>
+            </div>`).join('');
+    }
+
+    return `
+        <div class="receipt-wrap">
+            <div class="r-logo">CABIN PUTIH</div>
+            <div class="r-tagline">Makan pun puas, Rasa pun padu</div>
+            <div class="r-divider"></div>
+            <div class="r-order-id">Order #${details.orderId}</div>
+            <div class="r-divider dashed"></div>
+            <div class="r-dining">${details.diningType || ''}</div>
+            <div class="r-divider dashed"></div>
+            ${itemsHtml}
+            <div class="r-divider dashed"></div>
+            <div class="r-total-row"><span>Total</span><span>RM${parseFloat(details.total).toFixed(2)}</span></div>
+            <div class="r-pay-row"><span>${details.payType || ''}</span><span>RM${parseFloat(details.total).toFixed(2)}</span></div>
+            <div class="r-divider dashed"></div>
+            <div class="r-footer">Terima kasih, Jumpa lagi</div>
+            <div class="r-meta-row">${dateStr}${timeStr ? ' &bull; ' + timeStr : ''}</div>
+        </div>`;
+}
+
+function openPrintWindowWithContent(rawContent) {
+    const printWindow = window.open('', '_blank', 'height=650,width=380');
+    printWindow.document.write('<html><head><title>Print Receipt</title>');
+    printWindow.document.write(`<style>
+        body{font-family:'Courier New', monospace; padding:20px; color:#000; display:flex; justify-content:center;}
+        .receipt-wrap{width:280px;}
+        .r-logo{font-size:1.4rem; font-weight:800; text-align:center; letter-spacing:1px;}
+        .r-tagline{font-size:0.65rem; text-align:center; color:#555; margin-bottom:8px;}
+        .r-divider{border-top:2px solid #000; margin:8px 0;}
+        .r-divider.dashed{border-top:1px dashed #000;}
+        .r-order-id{font-size:0.95rem; font-weight:700; text-align:center; margin:6px 0;}
+        .r-dining{font-size:0.95rem; font-weight:700; text-align:center; margin:6px 0; text-transform:uppercase;}
+        .r-item{margin:8px 0;}
+        .r-item-row{display:flex; justify-content:space-between; font-size:0.85rem; font-weight:600; gap:12px;}
+        .r-item-sub{font-size:0.78rem; color:#444; margin-top:2px;}
+        .r-total-row{display:flex; justify-content:space-between; font-size:1.1rem; font-weight:800; margin:8px 0;}
+        .r-pay-row{display:flex; justify-content:space-between; font-size:0.85rem; color:#333;}
+        .r-footer{text-align:center; font-size:0.85rem; margin:12px 0 4px; font-style:italic;}
+        .r-meta-row{text-align:center; font-size:0.75rem; color:#555;}
+    </style>`);
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(rawContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function printOrderReceipt(details) {
+    openPrintWindowWithContent(buildReceiptHTML(details));
+}
+
+// Used right after checkout: has the full itemized cart data (name, qty, price)
+// still in memory before the cart is cleared.
+function printCurrentReceiptModal() {
+    const details = window.__receiptCache[document.getElementById('receiptOrderNum').textContent];
+    if (!details) {
+        alert('Receipt data unavailable.');
+        return;
+    }
+    printOrderReceipt(details);
+}
+
+// Used by Order Tracker / Order History: prints from lightweight cached
+// details (order-level summary, not a full item-by-item breakdown).
+function printOrderReceiptFromCache(orderId) {
+    const details = window.__receiptCache[orderId];
+    if (!details) {
+        alert('Receipt data unavailable for this order.');
+        return;
+    }
+    printOrderReceipt(details);
+}
+
+// ============================================================
+// RECEIPT PRINTING (shared across Checkout, Order Tracker, Order History)
+// ============================================================
+
+// Lightweight cache used by Order Tracker / Order History cards, since those
+// only have a summary string rather than a full itemized DOM breakdown.
+window.__receiptCache = window.__receiptCache || {};
+
+function openPrintWindowWithContent(rawContent) {
+    const printWindow = window.open('', '_blank', 'height=600,width=400');
+    printWindow.document.write('<html><head><title>Print Receipt</title>');
+    printWindow.document.write('<style>body{font-family:monospace; padding:20px; color:#000;} .amber{font-weight:bold;}</style>');
+    printWindow.document.write('</head><body>');
+    printWindow.document.write(rawContent);
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.print();
+}
+
+// Used right after checkout: reuses the itemized breakdown already rendered
+// inside the receipt success modal, same pattern as the staff POS receipt.
+function printCurrentReceiptModal() {
+    const orderId = document.getElementById('receiptOrderNum').textContent;
+    const itemsHtml = document.getElementById('receiptItemsBreakdownBox').innerHTML;
+
+    const rawContent = `
+        <div style="text-align:center; font-weight:800; margin-bottom:12px;">=== CABIN PUTIH RECEIPT ===</div>
+        <div style="font-size:0.8rem; color:#333; margin-bottom:8px;"><strong>Order ID:</strong> ${orderId}</div>
+        <div style="border-top:1px dashed #999; padding-top:8px; margin-top:8px;">${itemsHtml}</div>`;
+
+    openPrintWindowWithContent(rawContent);
+}
+
+// Used by Order Tracker / Order History: prints from lightweight cached
+// details (order-level summary, not a full item-by-item breakdown).
+function printOrderReceiptFromCache(orderId) {
+    const details = window.__receiptCache[orderId];
+    if (!details) {
+        alert('Receipt data unavailable for this order.');
+        return;
+    }
+
+    const rawContent = `
+        <div style="text-align:center; font-weight:800; margin-bottom:12px;">=== CABIN PUTIH RECEIPT ===</div>
+        <div style="font-size:0.8rem; color:#333; margin-bottom:8px;">
+            <strong>Order ID:</strong> ${details.orderId}<br>
+            <strong>Date:</strong> ${details.date}<br>
+            <strong>Mode:</strong> ${details.diningType}
+        </div>
+        <div style="border-top:1px dashed #999; padding-top:8px; margin-top:8px;">${details.summary}</div>
+        <div style="border-top:1px dashed #999; padding-top:8px; margin-top:8px; display:flex; justify-content:space-between; font-weight:800;">
+            <span>Total Paid (${details.payType})</span>
+            <span>RM ${parseFloat(details.total).toFixed(2)}</span>
+        </div>`;
+
+    openPrintWindowWithContent(rawContent);
+}
+
 // Controls visibility of QR component when QR is selected
 function toggleQrPaymentView() {
     const paymentChoice = document.getElementById('chkPaymentType').value;
@@ -426,3 +604,6 @@ window.navigateFromReceipt = navigateFromReceipt;
 window.closeClearBasketPopup = closeClearBasketPopup;
 window.confirmClearCart = confirmClearCart;
 window.toggleQrPaymentView = toggleQrPaymentView;
+window.printCurrentReceiptModal = printCurrentReceiptModal;
+window.printOrderReceiptFromCache = printOrderReceiptFromCache;
+window.printOrderReceipt = printOrderReceipt;

@@ -33,6 +33,18 @@ async function renderHistoryTable() {
             const itemSummary = record.summary || 'Item details unavailable';
             const orderID = record.order_id || 'ORD';
 
+            // Cache lightweight order details so the Print Receipt button can
+            // reuse the shared printOrderReceiptFromCache() helper in menu.js
+            window.__receiptCache = window.__receiptCache || {};
+            window.__receiptCache[orderID] = {
+                orderId: orderID,
+                date: orderDate,
+                diningType: diningType,
+                payType: payType,
+                total: totalAmount,
+                summary: itemSummary
+            };
+
             return `
                 <tr>
                     <td class="history-order-id">${orderID}</td>
@@ -43,7 +55,10 @@ async function renderHistoryTable() {
                     <td><div class="history-items-list">${itemSummary}</div></td>
                     <td><span style="font-weight: 700; color: var(--text-primary);">RM ${totalAmount}</span></td>
                     <td><span style="font-size:0.85rem; color: var(--text-secondary);">${payType}</span></td>
-                    <td><button type="button" class="btn-reorder" onclick="triggerFastReorder('${orderID}')">Reorder</button></td>
+                    <td style="display:flex; gap:8px;">
+                        <button type="button" class="btn-reorder" onclick="triggerFastReorder('${orderID}')">Reorder</button>
+                        <button type="button" class="btn-reorder" onclick="printOrderReceiptFromCache('${orderID}')">Print Receipt</button>
+                    </td>
                 </tr>
             `;
         }).join('');
