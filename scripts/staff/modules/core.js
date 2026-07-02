@@ -106,6 +106,25 @@ async function switchView(targetViewId) {
     }
 }
 
+async function requestItemRestock(itemId) {
+    try {
+        const response = await fetch(`${API_BASE_URL}staff/request_stock`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ item_id: itemId })
+        });
+        if (response.ok) {
+            showToastNotification('Stock request sent to manager!', 'success');
+        } else {
+            throw new Error('Request rejected');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Failed to send stock request.');
+    }
+}
+window.requestItemRestock = requestItemRestock;
+
 // ============================================================
 // BOOTSTRAP INITIALIZATION
 // ============================================================

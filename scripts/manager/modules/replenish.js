@@ -25,11 +25,15 @@ async function fetchReplenishAlertRequests() {
             const itemName = item.ITEM_NAME || item.item_name || 'Unknown Asset';
             const itemType = String(item.ITEM_TYPE || item.item_type || 'Kitchen').toUpperCase();
             const itemQty = item.ITEM_QTY || item.item_qty || 0;
+            const source = item.SOURCE || item.source || 'Auto Alert';
 
             return `
                 <tr>
                     <td class="history-order-id">${itemId}</td>
-                    <td><strong>${itemName}</strong></td>
+                    <td>
+                        <strong>${itemName}</strong>
+                        <div style="font-size:0.75rem; color:${source === 'Staff Request' ? 'var(--amber)' : 'var(--text-muted)'};">${source}</div>
+                    </td>
                     <td>${itemType}</td>
                     <td><span style="color:var(--danger); font-weight:700;">${itemQty} units</span></td>
                     <td><span class="status-pill-static danger">LOW STOCK</span></td>
@@ -65,7 +69,7 @@ function closeSupplierRestockModal() {
 
 async function handleExecuteSupplierOrderSubmit(event) {
     event.preventDefault();
-    
+
     const supplierId = document.getElementById('ddlRestockSupplierTarget').value;
     const orderQuantity = document.getElementById('numRestockOrderQty').value;
 
@@ -85,7 +89,7 @@ async function handleExecuteSupplierOrderSubmit(event) {
 
         if (response.ok) {
             closeSupplierRestockModal();
-            
+
             if (typeof triggerFloatingSuccessToastNotification === 'function') {
                 triggerFloatingSuccessToastNotification(`Successfully added ${orderQuantity} units via Supplier Pipeline!`);
             } else {
