@@ -200,11 +200,18 @@
                         <table class="history-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Company Name</th>
-                                    <th>Supply Type Class</th>
-                                    <th>Phone Contact</th>
-                                    <th>Next Delivery Date</th>
+                                    <th onclick="handleSupplierSort('sup_id')" style="cursor: pointer; user-select: none;">ID <span id="sort-icon-sup_id">↕</span></th>
+                                    <th onclick="handleSupplierSort('sup_name')" style="cursor: pointer; user-select: none;">Company Name <span id="sort-icon-sup_name">↕</span></th>
+                                    <th onclick="handleSupplierSort('sup_type')" style="cursor: pointer; user-select: none;">Supply Type Class <span id="sort-icon-sup_type">↕</span></th>
+                                    <th onclick="handleSupplierSort('sup_phone')" style="cursor: pointer; user-select: none;">Phone Contact <span id="sort-icon-sup_phone">↕</span></th>
+                                    <th onclick="handleSupplierSort('delivery_date')" style="cursor: pointer; user-select: none;">Next Delivery Date <span id="sort-icon-delivery_date">↕</span></th>
+                                </tr>
+                                <tr style="background: var(--bg-main);">
+                                    <td><input type="text" id="filter-sup_id" placeholder="Filter ID..." oninput="handleSupplierFilter()" class="form-control" style="padding: 4px 8px; font-size: 0.8rem; margin: 0; min-height: unset;"></td>
+                                    <td><input type="text" id="filter-sup_name" placeholder="Filter Name..." oninput="handleSupplierFilter()" class="form-control" style="padding: 4px 8px; font-size: 0.8rem; margin: 0; min-height: unset;"></td>
+                                    <td><input type="text" id="filter-sup_type" placeholder="Filter Type..." oninput="handleSupplierFilter()" class="form-control" style="padding: 4px 8px; font-size: 0.8rem; margin: 0; min-height: unset;"></td>
+                                    <td><input type="text" id="filter-sup_phone" placeholder="Filter Phone..." oninput="handleSupplierFilter()" class="form-control" style="padding: 4px 8px; font-size: 0.8rem; margin: 0; min-height: unset;"></td>
+                                    <td><input type="text" id="filter-delivery_date" placeholder="Filter Date..." oninput="handleSupplierFilter()" class="form-control" style="padding: 4px 8px; font-size: 0.8rem; margin: 0; min-height: unset;"></td>
                                 </tr>
                             </thead>
                             <tbody id="supplierProfilesTableBody"></tbody>
