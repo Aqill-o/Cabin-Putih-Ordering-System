@@ -3,8 +3,34 @@
    ============================================================ */
 
 /* ---- POPUP OVERLAY ACTION MODALS ---- */
-.modal-overlay { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; padding: 20px; }
-.modal-overlay.open { display: flex; opacity: 1; pointer-events: all; }
+/* ---- POPUP OVERLAY ACTION MODALS ---- */
+/* ---- POPUP OVERLAY ACTION MODALS ---- */
+.modal-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background-color: rgba(0, 0, 0, 0.4); 
+    backdrop-filter: blur(4px); 
+    z-index: 2000; 
+    
+    /* FIX: Use display flex as default, but hide it safely using visibility */
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    
+    /* FIX: Animate both opacity and visibility together */
+    visibility: hidden;
+    opacity: 0; 
+    pointer-events: none; 
+    transition: opacity 0.3s ease, visibility 0.3s ease; 
+    padding: 20px; 
+}
+
+/* FIX: When open, simply toggle visibility and opacity back on */
+.modal-overlay.open { 
+    visibility: visible;
+    opacity: 1; 
+    pointer-events: all; 
+}
 .modal-box { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; width: 100%; padding: 32px; box-shadow: var(--shadow-medium); max-height: 90vh; overflow-y: auto; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .modal-title { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); }

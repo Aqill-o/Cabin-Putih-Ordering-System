@@ -53,6 +53,14 @@ function filterPosCatalogDisplay(categoryClass, buttonElement) {
             displayImageSrc = 'https://images.pexels.com/photos/4110251/pexels-photo-4110251.jpeg?auto=compress&cs=tinysrgb&w=400&h=260';
         }
 
+        // FIX: Inject structural validation here to capture database uploads seamlessly!
+        if (item.item_image_url && 
+            item.item_image_url.trim() !== '' && 
+            item.item_image_url !== 'null' && 
+            item.item_image_url !== 'undefined') {
+            displayImageSrc = item.item_image_url;
+        }
+
         return `
             <div class="food-card">
                 <div class="food-img-wrapper" style="position: relative; width: 100%; padding-top: 66%; background-color: var(--bg-card); overflow: hidden;">

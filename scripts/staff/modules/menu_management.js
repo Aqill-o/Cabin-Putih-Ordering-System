@@ -45,6 +45,7 @@ function openItemPreviewActionPortal(itemId) {
     const item = window.localCachedMasterMenuCatalog.find(x => x.item_id === itemId);
     if (!item) return;
 
+    // Ensure qty is declared early!
     const qty = parseInt(item.item_qty || 0);
     let statusLabel = item.item_status;
     let statusClass = 'success';
@@ -71,8 +72,12 @@ function openItemPreviewActionPortal(itemId) {
     } else if (itemType === 'addon') {
         displayImageSrc = 'https://images.pexels.com/photos/4110251/pexels-photo-4110251.jpeg?auto=compress&cs=tinysrgb&w=400&h=260';
     }
-    // Prefer the staff-supplied custom picture link, when one was set
-    if (item.item_image_url) {
+    
+    // Tight database fallback URL checker
+    if (item.item_image_url && 
+        item.item_image_url.trim() !== '' && 
+        item.item_image_url !== 'null' && 
+        item.item_image_url !== 'undefined') {
         displayImageSrc = item.item_image_url;
     }
 
@@ -87,9 +92,12 @@ function openItemPreviewActionPortal(itemId) {
     flagEl.innerText = statusLabel.toUpperCase();
     flagEl.className = `status-pill-static ${statusClass}`;
 
+    // Microtask safety delay for DOM overlay transitions
     document.getElementById('btnPortalTriggerEdit').onclick = () => {
         closeItemPreviewActionPortal();
-        openMenuCrudFormModal('edit', itemId);
+        setTimeout(() => {
+            openMenuCrudFormModal('edit', itemId);
+        }, 50);
     };
 
     document.getElementById('btnPortalTriggerDelete').onclick = () => {
