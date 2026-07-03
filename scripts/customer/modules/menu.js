@@ -14,6 +14,14 @@ function generateMenuCardHTML(item) {
         displayImageSrc = 'https://images.pexels.com/photos/4110251/pexels-photo-4110251.jpeg?auto=compress&cs=tinysrgb&w=400&h=260';
     }
 
+    // FIX: Verify the parsed imgUrl here as well
+    if (item.imgUrl && 
+        String(item.imgUrl).trim() !== '' && 
+        String(item.imgUrl) !== 'null' && 
+        String(item.imgUrl) !== 'undefined') {
+        displayImageSrc = item.imgUrl;
+    }
+
     return `
         <div class="food-card">
             <div class="food-img-wrapper" style="position: relative; width: 100%; padding-top: 66%; background-color: var(--bg-card); overflow: hidden;">

@@ -11,12 +11,24 @@ function renderInventoryStockroomManagerTable() {
         const itemId = item.item_id || item.ITEM_ID || '';
         const itemName = item.item_name || item.ITEM_NAME || '';
         
-        let statusPill = `<span class="status-pill-static success">Healthy</span>`;
-        if (qty <= 0) {
-            statusPill = `<span class="status-pill-static danger">OUT OF STOCK</span>`;
-        } else if (qty <= 20) {
-            statusPill = `<span class="status-pill-static danger" style="background:var(--amber-faint); color:var(--amber); border-color:var(--amber);">CRITICAL LEVEL</span>`;
+        // TALLY LOGIC: Identical mapping thresholds as menu_management.js
+        let statusLabel = item.item_status || 'Available';
+        let statusClass = 'success';
+
+        if (qty === 0) {
+            statusLabel = 'Out of Stock';
+            statusClass = 'danger';
+        } else if (qty < 25) {
+            statusLabel = 'Low on Stock';
+            statusClass = 'warning';
+        } else if (qty > 50) {
+            statusLabel = 'Available';
+            statusClass = 'success';
+        } else {
+            statusClass = (statusLabel === 'Available' || statusLabel.toLowerCase() === 'available') ? 'success' : 'muted';
         }
+
+        let statusPill = `<span class="status-pill-static ${statusClass}">${statusLabel.toUpperCase()}</span>`;
 
         return `
             <tr>

@@ -84,7 +84,9 @@ async function fetchLiveCatalogFromDB() {
                 price: item.item_price ? parseFloat(item.item_price) : 0.00,
                 qty: calculatedQuantity,
                 type: itemType,
-                available: isItemAvailable
+                available: isItemAvailable,
+                // FIX: Add this line to pass the image down to the modules
+                imgUrl: item.item_image_url 
             };
         });
 
