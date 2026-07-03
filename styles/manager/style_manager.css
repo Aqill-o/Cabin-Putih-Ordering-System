@@ -24,3 +24,48 @@
 
 /* Toast: Floating notification alerts */
 @import url('./modules/toast.css');
+
+/* Add this snippet into the <style> tags near the bottom of dashboard_manager.html */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none; /* Keeps them hidden safely until called */
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+/* Overrides to activate modals cleanly */
+.modal-overlay.open {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+.modal-overlay.open .modal-box {
+    transform: scale(1) !important;
+    opacity: 1 !important;
+}
+
+@media print {
+    /* Hide navigation sidebar, headers, and floating notification modules */
+    .sidebar, .top-header, .filter-controls-container, .btn-logout, .toast-slot-wrapper {
+        display: none !important;
+    }
+    /* Expand the layout to capture full-page constraints */
+    .app-shell {
+        display: block !important;
+    }
+    .main-content {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+    .card, .metric-stat-card {
+        page-break-inside: avoid;
+        border: 1px solid #ccc !important;
+        box-shadow: none !important;
+    }
+}

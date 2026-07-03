@@ -7,31 +7,59 @@ let currentAnalyticsInterval = 'weekly';
 function generateTimelineTemplate(intervalMode) {
     if (intervalMode === 'weekly') {
         return [
-            { key: 'mon', name: 'Mon', value: 0 },
-            { key: 'tue', name: 'Tue', value: 0 },
-            { key: 'wed', name: 'Wed', value: 0 },
-            { key: 'thu', name: 'Thu', value: 0 },
-            { key: 'fri', name: 'Fri', value: 0 },
-            { key: 'sat', name: 'Sat', value: 0 },
-            { key: 'sun', name: 'Sun', value: 0 }
+            { key: 'mon', matches: ['mon', 'monday', '1', '2'], name: 'Mon', value: 0 },
+            { key: 'tue', matches: ['tue', 'tuesday', '2', '3'], name: 'Tue', value: 0 },
+            { key: 'wed', matches: ['wed', 'wednesday', '3', '4'], name: 'Wed', value: 0 },
+            { key: 'thu', matches: ['thu', 'thursday', '4', '5'], name: 'Thu', value: 0 },
+            { key: 'fri', matches: ['fri', 'friday', '5', '6'], name: 'Fri', value: 0 },
+            { key: 'sat', matches: ['sat', 'saturday', '6', '7'], name: 'Sat', value: 0 },
+            { key: 'sun', matches: ['sun', 'sunday', '7', '1'], name: 'Sun', value: 0 }
         ];
-    } else if (intervalMode === 'monthly' || intervalMode === 'quarters') {
+    } else if (intervalMode === 'monthly') {
         return [
-            { key: 'jan', name: 'Jan', value: 0 }, { key: 'feb', name: 'Feb', value: 0 },
-            { key: 'mar', name: 'Mar', value: 0 }, { key: 'apr', name: 'Apr', value: 0 },
-            { key: 'may', name: 'May', value: 0 }, { key: 'jun', name: 'Jun', value: 0 },
-            { key: 'jul', name: 'Jul', value: 0 }, { key: 'aug', name: 'Aug', value: 0 },
-            { key: 'sep', name: 'Sep', value: 0 }, { key: 'oct', name: 'Oct', value: 0 },
-            { key: 'nov', name: 'Nov', value: 0 }, { key: 'dec', name: 'Dec', value: 0 }
+            { key: 'jan', matches: ['jan', 'january', '1', '01'], name: 'Jan', value: 0 },
+            { key: 'feb', matches: ['feb', 'february', '2', '02'], name: 'Feb', value: 0 },
+            { key: 'mar', matches: ['mar', 'march', '3', '03'], name: 'Mar', value: 0 },
+            { key: 'apr', matches: ['apr', 'april', '4', '04'], name: 'Apr', value: 0 },
+            { key: 'may', matches: ['may', '05'], name: 'May', value: 0 },
+            { key: 'jun', matches: ['jun', 'june', '6', '06'], name: 'Jun', value: 0 },
+            { key: 'jul', matches: ['jul', 'july', '7', '07'], name: 'Jul', value: 0 },
+            { key: 'aug', matches: ['aug', 'august', '8', '08'], name: 'Aug', value: 0 },
+            { key: 'sep', matches: ['sep', 'september', '9', '09'], name: 'Sep', value: 0 },
+            { key: 'oct', matches: ['oct', 'october', '10'], name: 'Oct', value: 0 },
+            { key: 'nov', matches: ['nov', 'november', '11'], name: 'Nov', value: 0 },
+            { key: 'dec', matches: ['dec', 'december', '12'], name: 'Dec', value: 0 }
+        ];
+    } else if (intervalMode === 'quarters') {
+        return [
+            { key: 'mar', matches: ['mar', 'march', '3', '03', 'q1', '1'], name: 'Mar', value: 0 },
+            { key: 'jun', matches: ['jun', 'june', '6', '06', 'q2', '2'], name: 'Jun', value: 0 },
+            { key: 'sep', matches: ['sep', 'september', '9', '09', 'q3', '3'], name: 'Sep', value: 0 },
+            { key: 'dec', matches: ['dec', 'december', '12', '12', 'q4', '4'], name: 'Dec', value: 0 }
         ];
     } else if (intervalMode === 'yearly') {
         return [
-            { key: '2024', name: '2024', value: 0 },
-            { key: '2025', name: '2025', value: 0 },
-            { key: '2026', name: '2026', value: 0 }
+            { key: '2024', matches: ['2024', '24'], name: '2024', value: 0 },
+            { key: '2025', matches: ['2025', '25'], name: '2025', value: 0 },
+            { key: '2026', matches: ['2026', '26'], name: '2026', value: 0 }
         ];
     }
     return [];
+}
+
+// Flexible helper to match database data to chart positions cleanly
+function locateTemplateTimelineIndex(item, timelineTemplate) {
+    const rawLabel = String(item.TIME_LABEL || item.time_label || item.DAY_NAME || item.day_name || '').trim().toLowerCase();
+    if (!rawLabel) return -1;
+
+    const shortCleanKey = rawLabel.substring(0, 3);
+
+    return timelineTemplate.findIndex(t => 
+        t.key === rawLabel || 
+        t.key === shortCleanKey || 
+        t.matches.includes(rawLabel) ||
+        rawLabel.startsWith(t.key)
+    );
 }
 
 async function fetchExecutiveSummaryStatistics() {
@@ -48,6 +76,7 @@ async function fetchExecutiveSummaryStatistics() {
 
         updateChartsTextHeaderLabels();
 
+        // Redraw all graphs with the newly selected filter context!
         await generateWeeklySalesLineGraph();
         await generateWeeklyRevenueBarGraph();
         await generateDiningDistributionPieGraph();
@@ -84,12 +113,9 @@ async function generateWeeklySalesLineGraph() {
         const timelineTemplate = generateTimelineTemplate(currentAnalyticsInterval);
 
         rows.forEach(item => {
-            const rawLabel = String(item.TIME_LABEL || item.time_label || item.DAY_NAME || item.day_name || '').trim().toLowerCase();
-            const cleanKey = rawLabel.substring(0, 3);
-            
-            const pointIndex = timelineTemplate.findIndex(p => p.key === cleanKey || p.key === rawLabel);
+            const pointIndex = locateTemplateTimelineIndex(item, timelineTemplate);
             if (pointIndex !== -1) {
-                timelineTemplate[pointIndex].value = parseFloat(item.TOTAL_SALES || item.total_sales || 0);
+                timelineTemplate[pointIndex].value += parseFloat(item.TOTAL_SALES || item.total_sales || 0);
             }
         });
 
@@ -164,12 +190,9 @@ async function generateWeeklyRevenueBarGraph() {
         const timelineTemplate = generateTimelineTemplate(currentAnalyticsInterval);
 
         rows.forEach(item => {
-            const rawLabel = String(item.time_label || item.TIME_LABEL || item.day_name || item.DAY_NAME || '').trim().toLowerCase();
-            const cleanKey = rawLabel.substring(0, 3);
-            
-            const barIndex = timelineTemplate.findIndex(b => b.key === cleanKey || b.key === rawLabel);
+            const barIndex = locateTemplateTimelineIndex(item, timelineTemplate);
             if (barIndex !== -1) {
-                timelineTemplate[barIndex].value = parseFloat(item.daily_revenue || item.DAILY_REVENUE || item.total_sales || item.TOTAL_SALES || 0);
+                timelineTemplate[barIndex].value += parseFloat(item.daily_revenue || item.DAILY_REVENUE || item.total_sales || item.TOTAL_SALES || 0);
             }
         });
 

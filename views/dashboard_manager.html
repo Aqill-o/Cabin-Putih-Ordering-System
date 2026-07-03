@@ -62,7 +62,7 @@
                             <h1>Executive Overview Analytics</h1>
                             <p>Live aggregations synchronized with customer checkout terminals and active cash lanes.</p>
                         </div>
-                        <!-- Filter Controls -->
+
                         <div class="filter-controls-container" style="display: flex; align-items: center; gap: 12px; background: var(--bg-surface); padding: 8px 16px; border-radius: 12px; border: 1px solid var(--border);">
                             <label class="form-label" style="margin: 0; white-space: nowrap;">Analytics Interval:</label>
                             <select id="ddlAnalyticsInterval" class="form-control" style="width: 140px; padding: 6px 12px; margin: 0;" onchange="handleIntervalFilterChange()">
@@ -71,6 +71,10 @@
                                 <option value="quarters">Quarterly</option>
                                 <option value="yearly">Yearly</option>
                             </select>
+                            
+                            <button onclick="window.print()" class="btn-promo-action" style="padding: 6px 16px; font-size: 0.85rem; background: var(--amber); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                                Print Executive Report
+                            </button>
                         </div>
                     </header>
 
