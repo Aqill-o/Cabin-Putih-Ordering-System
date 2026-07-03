@@ -322,41 +322,50 @@
     </div>
 
     <!-- MENU CRUD FORM MODAL -->
+    <!-- MENU CRUD FORM MODAL -->
     <div class="modal-overlay" id="menuCrudFormModalOverlay">
-        <div class="modal-box" style="max-width: 460px;">
-            <div class="modal-header">
-                <h2 class="modal-title" id="lblCrudModalHeadingTitle">Recipe Parameters Form</h2>
-                <button type="button" class="modal-close-btn" onclick="closeMenuCrudFormModal()">&times;</button>
+        <div class="modal-box" style="max-width: 460px; background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border); border-radius: 20px; padding: 24px; font-family: var(--font-family, 'Plus Jakarta Sans', sans-serif);">
+            <div class="modal-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <h2 class="modal-title" id="lblCrudModalHeadingTitle" style="color: var(--text-primary); font-weight: 700;">Recipe Parameters Form</h2>
+                <button type="button" class="modal-close-btn" onclick="closeMenuCrudFormModal()" style="background: var(--bg-pill); border: none; color: var(--text-primary); border-radius: 50%; width: 32px; height: 32px; cursor: pointer;">&times;</button>
             </div>
             <form id="frmMenuItemCrudAsset" onsubmit="handleMenuItemCrudSubmission(event)">
                 <input type="hidden" id="txtCrudItemTargetId">
-                <div class="form-group">
-                    <label class="form-label">Menu Item Name</label>
-                    <input type="text" id="txtCrudItemName" class="form-control" required placeholder="e.g. Premium Beef Burger">
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color: var(--text-secondary); margin-bottom: 6px;">Item Name</label>
+                    <input type="text" id="txtCrudItemName" class="form-control" required
+                        style="width:100%; background: var(--bg-main); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text-primary); font-family: inherit;">
                 </div>
-                <div class="form-row">
-                    <div class="form-group"><label class="form-label">Price (RM)</label><input type="number" step="0.01" id="txtCrudItemPrice" class="form-control" required></div>
-                    <div class="form-group"><label class="form-label">Quantity</label><input type="number" id="txtCrudItemQty" class="form-control" required></div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color: var(--text-secondary); margin-bottom: 6px;">Price (RM)</label>
+                    <input type="number" id="txtCrudItemPrice" class="form-control" step="0.01" min="0.01" required
+                        style="width:100%; background: var(--bg-main); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text-primary); font-family: inherit;">
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">Category Group</label>
-                        <select id="ddlCrudItemType" class="form-control">
-                            <option value="burger">Burger</option>
-                            <option value="noodle">Noodle</option>
-                            <option value="beverage">Beverage</option>
-                            <option value="addon">Add-On</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Status Flag</label>
-                        <select id="ddlCrudItemStatus" class="form-control">
-                            <option value="Available">Available</option>
-                            <option value="Unavailable">Unavailable</option>
-                        </select>
-                    </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color: var(--text-secondary); margin-bottom: 6px;">Quantity</label>
+                    <input type="number" id="txtCrudItemQty" class="form-control" step="1" min="0" required
+                        style="width:100%; background: var(--bg-main); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text-primary); font-family: inherit;">
                 </div>
-                <button type="submit" id="btnSubmitCrudFormAsset" class="btn-submit-order" style="margin-top: 12px;">Save Recipe Row</button>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color: var(--text-secondary); margin-bottom: 6px;">Item Type</label>
+                    <select id="ddlCrudItemType" class="form-control" required
+                        style="width:100%; background: var(--bg-main); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text-primary); font-family: inherit;"></select>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" style="display:block; font-size:0.78rem; font-weight:700; text-transform:uppercase; color: var(--text-secondary); margin-bottom: 6px;">Picture Link (optional)</label>
+                    <input type="url" id="txtCrudItemImageUrl" class="form-control" placeholder="https://example.com/photo.jpg"
+                        style="width:100%; background: var(--bg-main); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; color: var(--text-primary); font-family: inherit;">
+                </div>
+
+                <button type="submit" id="btnSubmitCrudFormAsset" class="btn-submit-order"
+                    style="width:100%; background: var(--amber); color: #0b0f19; border:none; border-radius: 99px; padding: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; font-family: inherit;">
+                    Save Recipe Row
+                </button>
             </form>
         </div>
     </div>

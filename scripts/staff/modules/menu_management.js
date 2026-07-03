@@ -71,6 +71,10 @@ function openItemPreviewActionPortal(itemId) {
     } else if (itemType === 'addon') {
         displayImageSrc = 'https://images.pexels.com/photos/4110251/pexels-photo-4110251.jpeg?auto=compress&cs=tinysrgb&w=400&h=260';
     }
+    // Prefer the staff-supplied custom picture link, when one was set
+    if (item.item_image_url) {
+        displayImageSrc = item.item_image_url;
+    }
 
     document.getElementById('lblPreviewImgElementFrame').src = displayImageSrc;
     document.getElementById('lblPreviewRefId').innerText = item.item_id;
@@ -107,6 +111,15 @@ function openMenuCrudFormModal(mode, itemId = '') {
     document.getElementById('frmMenuItemCrudAsset').reset();
     document.getElementById('txtCrudItemTargetId').value = itemId;
 
+    // Populate item type options dynamically from whatever types already
+    // exist in the DB, instead of a hardcoded/static list
+    const distinctTypes = [...new Set(window.localCachedMasterMenuCatalog
+        .map(item => String(item.item_type).trim())
+        .filter(type => type && type.toLowerCase() !== 'null' && type.toLowerCase() !== 'undefined')
+    )];
+    const typeDropdown = document.getElementById('ddlCrudItemType');
+    typeDropdown.innerHTML = distinctTypes.map(t => `<option value="${t}">${t.toUpperCase()}</option>`).join('');
+
     if (mode === 'add') {
         title.innerText = "Create New Menu Recipe Row";
     } else {
@@ -117,7 +130,7 @@ function openMenuCrudFormModal(mode, itemId = '') {
             document.getElementById('txtCrudItemPrice').value = record.item_price;
             document.getElementById('txtCrudItemQty').value = record.item_qty;
             document.getElementById('ddlCrudItemType').value = record.item_type;
-            document.getElementById('ddlCrudItemStatus').value = record.item_status;
+            document.getElementById('txtCrudItemImageUrl').value = record.item_image_url || '';
         }
     }
     modal.classList.add('open');
@@ -131,13 +144,43 @@ async function handleMenuItemCrudSubmission(e) {
     e.preventDefault();
     const id = document.getElementById('txtCrudItemTargetId').value;
 
+    const itemName = document.getElementById('txtCrudItemName').value.trim();
+    const itemPriceRaw = document.getElementById('txtCrudItemPrice').value.trim();
+    const itemQtyRaw = document.getElementById('txtCrudItemQty').value.trim();
+    const itemImageUrl = document.getElementById('txtCrudItemImageUrl').value.trim();
+
+    // ---- Client-side validation ----
+    if (!itemName) {
+        window.showToastNotification("Item name is required.", "danger");
+        return;
+    }
+
+    const itemPrice = parseFloat(itemPriceRaw);
+    if (isNaN(itemPrice) || itemPrice <= 0) {
+        window.showToastNotification("Price must be a positive decimal value (e.g. 6.50).", "danger");
+        return;
+    }
+
+    const itemQty = Number(itemQtyRaw);
+    if (isNaN(itemQty) || itemQty < 0 || !Number.isInteger(itemQty)) {
+        window.showToastNotification("Quantity must be a positive whole number.", "danger");
+        return;
+    }
+
+    // Picture link is optional -- only validate format if the staff member entered something
+    if (itemImageUrl && !/^https?:\/\/.+/i.test(itemImageUrl)) {
+        window.showToastNotification("Picture link must be a valid URL starting with http:// or https://", "danger");
+        return;
+    }
+
     const payload = {
         item_id: id,
-        item_name: document.getElementById('txtCrudItemName').value.trim(),
-        item_price: document.getElementById('txtCrudItemPrice').value,
-        item_qty: document.getElementById('txtCrudItemQty').value,
+        item_name: itemName,
+        item_price: itemPrice,
+        item_qty: itemQty,
         item_type: document.getElementById('ddlCrudItemType').value,
-        item_status: document.getElementById('ddlCrudItemStatus').value
+        item_status: itemQty > 0 ? 'Available' : 'Unavailable', // derived from quantity, no manual toggle
+        item_image_url: itemImageUrl
     };
 
     const endpointPath = id ? 'customer/update_item' : 'customer/add_item';
