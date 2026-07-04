@@ -115,12 +115,13 @@
                         <!-- 2. SIDE-BY-SIDE SECOND ROW GRID -->
                         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(480px, 1fr)); gap: 32px;">
                             
-                            <!-- LEFT: AVERAGE ORDER VALUE BAR CHART -->
+                            <!-- LEFT: SALES BY DINING TYPE CLUSTERED BAR CHART -->
                             <div class="card" style="display: flex; flex-direction: column;">
-                                <div class="card-title" id="lblRevenueBarChartTitle">Weekly Average Order Value Peak Performance (RM)</div>
+                                <div class="card-title" id="lblRevenueBarChartTitle">Weekly Total Order Sales by Dining Type (RM)</div>
                                 <div class="chart-container-vector" style="height: 340px; padding: 24px 16px 40px; margin-top: auto;">
                                     <svg id="svgWeeklyRevenueChart" width="100%" height="100%" viewBox="0 0 640 240" preserveAspectRatio="none" style="overflow: visible; display: block; max-width: 100%;"></svg>
                                 </div>
+                                <div id="barChartLegendLabelsContainer" style="display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; padding-top: 12px;"></div>
                             </div>
 
                             <!-- RIGHT: REVENUE SHARE PIE CHART -->

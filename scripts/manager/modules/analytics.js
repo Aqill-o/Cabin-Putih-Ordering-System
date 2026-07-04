@@ -4,61 +4,82 @@
 
 let currentAnalyticsInterval = 'weekly';
 
+// NOTE: these templates must mirror exactly what the backend SQL returns
+// for each interval (see manager/sales_trend + manager/sales_by_dining_type):
+//   weekly   -> day-of-week label, for the CURRENT week               (Mon..Sun)
+//   monthly  -> 3-letter month abbreviation, one row per month of the CURRENT year (Jan..Dec)
+//   quarters -> quarter label (Mar/Jun/Sep/Dec), one row per quarter of the CURRENT year (4 rows)
+//   yearly   -> 4-digit year, one row per year for the last 3 years (dynamic, not hardcoded)
 function generateTimelineTemplate(intervalMode) {
     if (intervalMode === 'weekly') {
         return [
-            { key: 'mon', matches: ['mon', 'monday', '1', '2'], name: 'Mon', value: 0 },
-            { key: 'tue', matches: ['tue', 'tuesday', '2', '3'], name: 'Tue', value: 0 },
-            { key: 'wed', matches: ['wed', 'wednesday', '3', '4'], name: 'Wed', value: 0 },
-            { key: 'thu', matches: ['thu', 'thursday', '4', '5'], name: 'Thu', value: 0 },
-            { key: 'fri', matches: ['fri', 'friday', '5', '6'], name: 'Fri', value: 0 },
-            { key: 'sat', matches: ['sat', 'saturday', '6', '7'], name: 'Sat', value: 0 },
-            { key: 'sun', matches: ['sun', 'sunday', '7', '1'], name: 'Sun', value: 0 }
-        ];
-    } else if (intervalMode === 'monthly') {
-        return [
-            { key: 'jan', matches: ['jan', 'january', '1', '01'], name: 'Jan', value: 0 },
-            { key: 'feb', matches: ['feb', 'february', '2', '02'], name: 'Feb', value: 0 },
-            { key: 'mar', matches: ['mar', 'march', '3', '03'], name: 'Mar', value: 0 },
-            { key: 'apr', matches: ['apr', 'april', '4', '04'], name: 'Apr', value: 0 },
-            { key: 'may', matches: ['may', '05'], name: 'May', value: 0 },
-            { key: 'jun', matches: ['jun', 'june', '6', '06'], name: 'Jun', value: 0 },
-            { key: 'jul', matches: ['jul', 'july', '7', '07'], name: 'Jul', value: 0 },
-            { key: 'aug', matches: ['aug', 'august', '8', '08'], name: 'Aug', value: 0 },
-            { key: 'sep', matches: ['sep', 'september', '9', '09'], name: 'Sep', value: 0 },
-            { key: 'oct', matches: ['oct', 'october', '10'], name: 'Oct', value: 0 },
-            { key: 'nov', matches: ['nov', 'november', '11'], name: 'Nov', value: 0 },
-            { key: 'dec', matches: ['dec', 'december', '12'], name: 'Dec', value: 0 }
-        ];
-    } else if (intervalMode === 'quarters') {
-        return [
-            { key: 'mar', matches: ['mar', 'march', '3', '03', 'q1', '1'], name: 'Mar', value: 0 },
-            { key: 'jun', matches: ['jun', 'june', '6', '06', 'q2', '2'], name: 'Jun', value: 0 },
-            { key: 'sep', matches: ['sep', 'september', '9', '09', 'q3', '3'], name: 'Sep', value: 0 },
-            { key: 'dec', matches: ['dec', 'december', '12', '12', 'q4', '4'], name: 'Dec', value: 0 }
-        ];
-    } else if (intervalMode === 'yearly') {
-        return [
-            { key: '2024', matches: ['2024', '24'], name: '2024', value: 0 },
-            { key: '2025', matches: ['2025', '25'], name: '2025', value: 0 },
-            { key: '2026', matches: ['2026', '26'], name: '2026', value: 0 }
+            { key: 'mon', matches: ['mon', 'monday'], name: 'Mon', value: 0 },
+            { key: 'tue', matches: ['tue', 'tuesday'], name: 'Tue', value: 0 },
+            { key: 'wed', matches: ['wed', 'wednesday'], name: 'Wed', value: 0 },
+            { key: 'thu', matches: ['thu', 'thursday'], name: 'Thu', value: 0 },
+            { key: 'fri', matches: ['fri', 'friday'], name: 'Fri', value: 0 },
+            { key: 'sat', matches: ['sat', 'saturday'], name: 'Sat', value: 0 },
+            { key: 'sun', matches: ['sun', 'sunday'], name: 'Sun', value: 0 }
         ];
     }
+
+    if (intervalMode === 'monthly') {
+        // Backend returns one row per month of the CURRENT year, label = "Mon" (Jan..Dec)
+        const MONTH_KEYS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+        const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return MONTH_KEYS.map((key, idx) => ({
+            key,
+            matches: [key, MONTH_NAMES[idx].toLowerCase()],
+            name: MONTH_NAMES[idx],
+            value: 0
+        }));
+    }
+
+    if (intervalMode === 'quarters') {
+        // Backend returns one row per quarter of the CURRENT year, labeled by the
+        // quarter's last month: Mar (Q1), Jun (Q2), Sep (Q3), Dec (Q4)
+        return [
+            { key: 'mar', matches: ['mar', 'q1'], name: 'Q1', value: 0 },
+            { key: 'jun', matches: ['jun', 'q2'], name: 'Q2', value: 0 },
+            { key: 'sep', matches: ['sep', 'q3'], name: 'Q3', value: 0 },
+            { key: 'dec', matches: ['dec', 'q4'], name: 'Q4', value: 0 }
+        ];
+    }
+
+    if (intervalMode === 'yearly') {
+        // Backend returns one row per year for the CURRENT year + prior 2 years.
+        // Computed dynamically so this doesn't need updating every January.
+        const currentYear = new Date().getFullYear();
+        const years = [currentYear - 2, currentYear - 1, currentYear];
+        return years.map(year => ({
+            key: String(year),
+            matches: [String(year)],
+            name: String(year),
+            value: 0
+        }));
+    }
+
     return [];
 }
 
-// Flexible helper to match database data to chart positions cleanly
-function locateTemplateTimelineIndex(item, timelineTemplate) {
+// Matches a raw label coming back from the API to the correct bucket in the
+// timeline template. Yearly labels ("2024","2025","2026") all share the same
+// first 3 characters ("202"), so yearly must ALWAYS match on the full,
+// exact label - never a truncated prefix. Weekly/monthly/quarters labels
+// are day/month names and are safe to compare against their first 3 chars too.
+function locateTemplateTimelineIndex(item, timelineTemplate, intervalMode) {
     const rawLabel = String(item.TIME_LABEL || item.time_label || item.DAY_NAME || item.day_name || '').trim().toLowerCase();
     if (!rawLabel) return -1;
 
-    const shortCleanKey = rawLabel.substring(0, 3);
+    if (intervalMode === 'yearly') {
+        return timelineTemplate.findIndex(t => t.key === rawLabel || t.matches.includes(rawLabel));
+    }
 
-    return timelineTemplate.findIndex(t => 
-        t.key === rawLabel || 
-        t.key === shortCleanKey || 
+    const shortCleanKey = rawLabel.substring(0, 3);
+    return timelineTemplate.findIndex(t =>
+        t.key === rawLabel ||
         t.matches.includes(rawLabel) ||
-        rawLabel.startsWith(t.key)
+        t.matches.includes(shortCleanKey)
     );
 }
 
@@ -78,7 +99,7 @@ async function fetchExecutiveSummaryStatistics() {
 
         // Redraw all graphs with the newly selected filter context!
         await generateWeeklySalesLineGraph();
-        await generateWeeklyRevenueBarGraph();
+        await generateDiningTypeClusterChart();
         await generateDiningDistributionPieGraph();
     } catch (e) {
         console.error("Summary metrics failed initialization maps.", e);
@@ -94,8 +115,8 @@ async function handleIntervalFilterChange() {
 
 function updateChartsTextHeaderLabels() {
     const capitalized = currentAnalyticsInterval.charAt(0).toUpperCase() + currentAnalyticsInterval.slice(1);
-    
-    document.getElementById('lblRevenueBarChartTitle').innerText = `${capitalized} Average Order Value Peak Performance (RM)`;
+
+    document.getElementById('lblRevenueBarChartTitle').innerText = `${capitalized} Total Order Sales by Dining Type (RM)`;
     document.getElementById('lblSalesLineChartTitle').innerText = `${capitalized} Total Sales Trend Performance (RM)`;
     document.getElementById('lblPieChartTitle').innerText = `Revenue Share Metrics Breakdown (${capitalized})`;
 }
@@ -113,7 +134,7 @@ async function generateWeeklySalesLineGraph() {
         const timelineTemplate = generateTimelineTemplate(currentAnalyticsInterval);
 
         rows.forEach(item => {
-            const pointIndex = locateTemplateTimelineIndex(item, timelineTemplate);
+            const pointIndex = locateTemplateTimelineIndex(item, timelineTemplate, currentAnalyticsInterval);
             if (pointIndex !== -1) {
                 timelineTemplate[pointIndex].value += parseFloat(item.TOTAL_SALES || item.total_sales || 0);
             }
@@ -137,7 +158,7 @@ async function generateWeeklySalesLineGraph() {
             const positionX = chartInlinePadding + (index * horizontalWidthStep);
             const proportionalHeight = (pt.value / maxSalesValue) * chartHeightBoundary;
             const positionY = chartHeightBoundary - proportionalHeight;
-            
+
             pointsPathString += `${positionX},${positionY} `;
             areaFillPathString += `${positionX},${positionY} `;
             return { x: positionX, y: positionY, val: pt.value, label: pt.name };
@@ -177,58 +198,103 @@ async function generateWeeklySalesLineGraph() {
     }
 }
 
-async function generateWeeklyRevenueBarGraph() {
+async function generateDiningTypeClusterChart() {
     const svg = document.getElementById('svgWeeklyRevenueChart');
+    const legendContainer = document.getElementById('barChartLegendLabelsContainer');
     if (!svg) return;
     svg.innerHTML = '';
+    if (legendContainer) legendContainer.innerHTML = '';
 
     try {
-        const res = await fetch(`${API_BASE_URL}manager/revenue_by_day?interval=${currentAnalyticsInterval}`);
+        const res = await fetch(`${API_BASE_URL}manager/sales_by_dining_type?interval=${currentAnalyticsInterval}`);
         const data = await res.json();
         const rows = data.items || [];
 
         const timelineTemplate = generateTimelineTemplate(currentAnalyticsInterval);
 
+        // Discover which dining types actually appear, so colors/legend stay
+        // consistent even when a period has zero orders for a given type.
+        const diningTypeSet = new Set();
         rows.forEach(item => {
-            const barIndex = locateTemplateTimelineIndex(item, timelineTemplate);
-            if (barIndex !== -1) {
-                timelineTemplate[barIndex].value += parseFloat(item.daily_revenue || item.DAILY_REVENUE || item.total_sales || item.TOTAL_SALES || 0);
-            }
+            diningTypeSet.add(String(item.dining_type || item.DINING_TYPE || 'Unknown').trim());
+        });
+        const diningTypes = Array.from(diningTypeSet).sort();
+
+        // Each bucket now holds a value PER dining type instead of one number.
+        timelineTemplate.forEach(bucket => {
+            bucket.valuesByType = {};
+            diningTypes.forEach(type => { bucket.valuesByType[type] = 0; });
         });
 
-        const maxRevenueValue = Math.max(...timelineTemplate.map(d => d.value), 5);
+        rows.forEach(item => {
+            const bucketIndex = locateTemplateTimelineIndex(item, timelineTemplate, currentAnalyticsInterval);
+            if (bucketIndex === -1) return;
+            const type = String(item.dining_type || item.DINING_TYPE || 'Unknown').trim();
+            const amount = parseFloat(item.total_sales || item.TOTAL_SALES || 0);
+            timelineTemplate[bucketIndex].valuesByType[type] = (timelineTemplate[bucketIndex].valuesByType[type] || 0) + amount;
+        });
+
+        const colorPalette = ['var(--amber)', 'var(--info)', 'var(--success)', '#9333ea', '#DB2777'];
+        const colorByType = {};
+        diningTypes.forEach((type, i) => { colorByType[type] = colorPalette[i % colorPalette.length]; });
+
+        const maxValue = Math.max(
+            ...timelineTemplate.flatMap(bucket => diningTypes.map(t => bucket.valuesByType[t] || 0)),
+            5
+        );
+
         const chartHeightBoundary = 180;
-        const totalBarsCount = timelineTemplate.length;
-        
         const svgCanvasWidth = 640;
-        const chartInlinePadding = 24; 
+        const chartInlinePadding = 24;
         const usableGraphWidth = svgCanvasWidth - (chartInlinePadding * 2);
-        const horizontalWidthStep = usableGraphWidth / totalBarsCount;
+        const groupWidthStep = usableGraphWidth / timelineTemplate.length;
+
+        const barGap = 3;
+        const typeCount = Math.max(diningTypes.length, 1);
+        const groupInnerWidth = groupWidthStep * 0.72;
+        const barWidth = Math.min(22, (groupInnerWidth - (barGap * (typeCount - 1))) / typeCount);
+        const clusterWidth = (barWidth * typeCount) + (barGap * (typeCount - 1));
 
         svg.innerHTML += `<line x1="${chartInlinePadding}" y1="${chartHeightBoundary}" x2="${svgCanvasWidth - chartInlinePadding}" y2="${chartHeightBoundary}" stroke="var(--border)" stroke-width="2"/>`;
 
-        timelineTemplate.forEach((day, index) => {
-            const barWidthSize = Math.min(38, horizontalWidthStep * 0.6);
-            const barProportionalHeight = (day.value / maxRevenueValue) * chartHeightBoundary;
+        timelineTemplate.forEach((bucket, groupIndex) => {
+            const groupCenterX = chartInlinePadding + (groupIndex * groupWidthStep) + (groupWidthStep / 2);
+            const clusterStartX = groupCenterX - (clusterWidth / 2);
 
-            const positionX = chartInlinePadding + (index * horizontalWidthStep) + (horizontalWidthStep - barWidthSize) / 2;
-            const positionY = chartHeightBoundary - barProportionalHeight;
+            diningTypes.forEach((type, typeIndex) => {
+                const value = bucket.valuesByType[type] || 0;
+                const barHeight = (value / maxValue) * chartHeightBoundary;
+                const barX = clusterStartX + (typeIndex * (barWidth + barGap));
+                const barY = chartHeightBoundary - barHeight;
 
-            svg.innerHTML += `
-                <g>
-                    <rect x="${positionX}" y="${positionY}" width="${barWidthSize}" height="${barProportionalHeight}" 
-                          fill="var(--amber)" opacity="${day.value > 0 ? '1' : '0.15'}" rx="5" 
-                          style="animation: barGrow 1s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-                                 transform-origin: bottom; 
-                                 transform: scaleY(0);">
-                    </rect>
-                    <text x="${positionX + (barWidthSize / 2)}" y="${chartHeightBoundary + 22}" class="chart-axis-text" text-anchor="middle">${day.name}</text>
-                    ${day.value > 0 ? `<text x="${positionX + (barWidthSize / 2)}" y="${positionY - 10}" class="chart-value-label">RM ${day.value.toFixed(2)}</text>` : ''}
-                </g>
-            `;
+                svg.innerHTML += `
+                    <g>
+                        <rect x="${barX}" y="${barY}" width="${barWidth}" height="${barHeight}"
+                              fill="${colorByType[type]}" opacity="${value > 0 ? '1' : '0.15'}" rx="3"
+                              style="animation: barGrow 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                                     transform-origin: bottom;
+                                     transform: scaleY(0);">
+                        </rect>
+                        ${value > 0 ? `<text x="${barX + (barWidth / 2)}" y="${barY - 6}" class="chart-value-label" style="font-size: 8px;">${value.toFixed(0)}</text>` : ''}
+                    </g>
+                `;
+            });
+
+            svg.innerHTML += `<text x="${groupCenterX}" y="${chartHeightBoundary + 22}" class="chart-axis-text" text-anchor="middle">${bucket.name}</text>`;
         });
+
+        if (legendContainer) {
+            diningTypes.forEach(type => {
+                legendContainer.insertAdjacentHTML('beforeend', `
+                    <div style="display:flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text-secondary); font-weight:600;">
+                        <span style="width:11px; height:11px; border-radius:3px; background:${colorByType[type]}; display:inline-block;"></span>
+                        ${type}
+                    </div>
+                `);
+            });
+        }
     } catch (err) {
-        console.error("Weekly bar chart execution exception:", err);
+        console.error("Dining type cluster chart execution exception:", err);
     }
 }
 
@@ -291,6 +357,6 @@ async function generateDiningDistributionPieGraph() {
 
 window.fetchExecutiveSummaryStatistics = fetchExecutiveSummaryStatistics;
 window.handleIntervalFilterChange = handleIntervalFilterChange;
-window.generateWeeklyRevenueBarGraph = generateWeeklyRevenueBarGraph;
+window.generateDiningTypeClusterChart = generateDiningTypeClusterChart;
 window.generateWeeklySalesLineGraph = generateWeeklySalesLineGraph;
 window.generateDiningDistributionPieGraph = generateDiningDistributionPieGraph;
