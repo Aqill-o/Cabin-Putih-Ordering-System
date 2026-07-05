@@ -118,10 +118,10 @@
                             <!-- LEFT: SALES BY DINING TYPE CLUSTERED BAR CHART -->
                             <div class="card" style="display: flex; flex-direction: column;">
                                 <div class="card-title" id="lblRevenueBarChartTitle">Weekly Total Order Sales by Dining Type (RM)</div>
-                                <div class="chart-container-vector" style="height: 340px; padding: 24px 16px 40px; margin-top: auto;">
-                                    <svg id="svgWeeklyRevenueChart" width="100%" height="100%" viewBox="0 0 640 240" preserveAspectRatio="none" style="overflow: visible; display: block; max-width: 100%;"></svg>
+                                <div class="chart-container-vector" style="height: 340px; padding: 24px 16px 20px; margin-top: auto; display: flex; flex-direction: column; gap: 12px;">
+                                    <svg id="svgWeeklyRevenueChart" width="100%" height="100%" viewBox="0 0 640 240" preserveAspectRatio="none" style="overflow: visible; display: block; max-width: 100%; flex: 1; min-height: 0;"></svg>
+                                    <div id="barChartLegendLabelsContainer" style="display: flex; gap: 18px; justify-content: center; flex-wrap: wrap;"></div>
                                 </div>
-                                <div id="barChartLegendLabelsContainer" style="display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; padding-top: 12px;"></div>
                             </div>
 
                             <!-- RIGHT: REVENUE SHARE PIE CHART -->
@@ -131,7 +131,7 @@
                                     <div class="pie-chart-left">
                                         <svg id="svgDiningTypePieChart" width="160" height="160" viewBox="0 0 100 100" style="transform: rotate(-90deg); display: block; overflow: visible;"></svg>
                                     </div>
-                                    <div id="pieChartLegendLabelsContainer" class="pie-chart-legend" style="overflow-y: auto; max-height: 270px; padding-right: 4px;"></div>
+                                    <div id="pieChartLegendLabelsContainer" class="pie-chart-legend"></div>
                                 </div>
                             </div>
 
@@ -232,16 +232,9 @@
                 <button type="button" class="modal-close-btn" onclick="closeAddStaffModal()">&times;</button>
             </div>
             <form onsubmit="handleCreateStaffSubmit(event)">
-                <!-- SPLIT NAME FIELD LAYOUT -->
-                <div class="form-row">
-                    <div class="form-group">
-                        <label class="form-label">First Name</label>
-                        <input type="text" id="txtNewStaffFirst" class="form-control" required placeholder="e.g. AHMAD">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Last Name</label>
-                        <input type="text" id="txtNewStaffLast" class="form-control" required placeholder="e.g. BIN ALI">
-                    </div>
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="txtNewStaffName" class="form-control" required placeholder="e.g. Ahmad bin Ali">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
