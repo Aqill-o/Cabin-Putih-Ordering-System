@@ -186,29 +186,41 @@
                         <p>Review complete historical transactions saved to disk data clusters.</p>
                     </header>
 
-                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 32px; background: var(--bg-surface); padding: 16px; border-radius: 16px; border: 1px solid var(--border);">
+                    <style>
+                        .past-orders-sortable-th {
+                            cursor: pointer;
+                            user-select: none;
+                            white-space: nowrap;
+                        }
+                        .past-orders-sortable-th:hover {
+                            opacity: 0.85;
+                        }
+                        .past-orders-sort-indicator {
+                            display: inline-block;
+                            margin-left: 4px;
+                            font-size: 0.75em;
+                            opacity: 0.6;
+                        }
+                        .past-orders-sortable-th.active-sort .past-orders-sort-indicator {
+                            opacity: 1;
+                        }
+                    </style>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 32px; background: var(--bg-surface); padding: 16px; border-radius: 16px; border: 1px solid var(--border);">
                         <input type="text" id="txtSearchPastOrders" class="form-control" placeholder="Search past logs by ID or Name..." oninput="filterAndRenderPastOrdersArchive()">
                         <input type="date" id="dateSearchPastOrders" class="form-control" onchange="filterAndRenderPastOrdersArchive()">
-                        <select id="ddlSortPastOrders" class="form-control" onchange="filterAndRenderPastOrdersArchive()">
-                            <option value="order_id">Order ID</option>
-                            <option value="order_date">Calendar Entry Date</option>
-                        </select>
-                        <select id="ddlDirectionPastOrders" class="form-control" onchange="filterAndRenderPastOrdersArchive()">
-                            <option value="DESC">Descending</option>
-                            <option value="ASC">Ascending</option>
-                        </select>
                     </div>
 
                     <div class="history-table-card">
                         <table class="history-table">
                             <thead>
                                 <tr>
-                                    <th>Order ID</th>
-                                    <th>Timestamp</th>
-                                    <th>Customer Account Link</th>
-                                    <th>Line Allocation Summary</th>
-                                    <th>Grand Total Billing</th>
-                                    <th>Payment Type</th>
+                                    <th class="past-orders-sortable-th" data-sort-key="order_id" onclick="sortPastOrdersByColumn('order_id')">Order ID<span class="past-orders-sort-indicator" id="sortIndicator-order_id"></span></th>
+                                    <th class="past-orders-sortable-th" data-sort-key="order_date" onclick="sortPastOrdersByColumn('order_date')">Timestamp<span class="past-orders-sort-indicator" id="sortIndicator-order_date"></span></th>
+                                    <th class="past-orders-sortable-th" data-sort-key="customer_name" onclick="sortPastOrdersByColumn('customer_name')">Customer Account Link<span class="past-orders-sort-indicator" id="sortIndicator-customer_name"></span></th>
+                                    <th class="past-orders-sortable-th" data-sort-key="summary" onclick="sortPastOrdersByColumn('summary')">Line Allocation Summary<span class="past-orders-sort-indicator" id="sortIndicator-summary"></span></th>
+                                    <th class="past-orders-sortable-th" data-sort-key="total_amount" onclick="sortPastOrdersByColumn('total_amount')">Grand Total Billing<span class="past-orders-sort-indicator" id="sortIndicator-total_amount"></span></th>
+                                    <th class="past-orders-sortable-th" data-sort-key="pay_type" onclick="sortPastOrdersByColumn('pay_type')">Payment Type<span class="past-orders-sort-indicator" id="sortIndicator-pay_type"></span></th>
                                 </tr>
                             </thead>
                             <tbody id="historicalPastOrdersTableBody"></tbody>
@@ -379,5 +391,28 @@
     <script src="../../scripts/staff/modules/inventory_stock.js"></script>
     <script src="../../scripts/staff/modules/order_history_archive.js"></script>
     <script src="../../scripts/staff/app_staff.js"></script>
+    <script>
+        // Sidebar shows only the employee's first name, regardless of what
+        // the full display name string (set elsewhere) contains.
+        (function () {
+            const nameEl = document.getElementById('lblStaffDisplayName');
+            if (!nameEl) return;
+
+            function showFirstNameOnly() {
+                const fullName = nameEl.textContent.trim();
+                if (!fullName || fullName === 'LOADING...') return;
+                const firstName = fullName.split(/\s+/)[0];
+                if (nameEl.textContent !== firstName) {
+                    nameEl.textContent = firstName;
+                }
+            }
+
+            // The name is populated asynchronously elsewhere, so watch for
+            // changes rather than assuming it's already set on page load.
+            const observer = new MutationObserver(showFirstNameOnly);
+            observer.observe(nameEl, { childList: true, characterData: true, subtree: true });
+            showFirstNameOnly();
+        })();
+    </script>
 </body>
 </html>

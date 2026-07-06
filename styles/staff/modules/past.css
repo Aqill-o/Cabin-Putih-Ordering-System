@@ -4,5 +4,73 @@
 
 /* Past orders view reuses the shared .history-table-card and
    .history-table components defined in directory.css.
-   Section-specific past orders styles are added here as the
-   historical archive interface grows. */
+   Section-specific past orders styles below. */
+
+/* --- Filter bar inputs --- */
+#view-past input.form-control,
+#view-past select.form-control {
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+#view-past input.form-control:focus,
+#view-past select.form-control:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.15);
+}
+
+#view-past input.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+/* --- Table rows --- */
+#historicalPastOrdersTableBody tr {
+    transition: background-color 0.15s ease;
+}
+
+#historicalPastOrdersTableBody tr:hover {
+    background-color: var(--bg-main);
+}
+
+/* Cancelled orders get a subtle red tint and dimmed text so the eye
+   naturally separates them from completed transactions. */
+#historicalPastOrdersTableBody tr.row-status-cancelled {
+    background-color: var(--danger-faint);
+}
+
+#historicalPastOrdersTableBody tr.row-status-cancelled td {
+    color: var(--text-muted);
+}
+
+#historicalPastOrdersTableBody tr.row-status-cancelled .history-order-id,
+#historicalPastOrdersTableBody tr.row-status-cancelled strong {
+    color: var(--text-muted);
+}
+
+/* --- Cell content --- */
+.past-orders-summary-cell {
+    max-width: 240px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.past-orders-amount {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* --- Empty state --- */
+.past-orders-empty {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 32px 24px;
+    font-size: 0.9rem;
+}
+
+/* --- Responsive filter bar: stack on narrow screens --- */
+@media (max-width: 900px) {
+    #view-past > div[style*="grid-template-columns"] {
+        grid-template-columns: 1fr !important;
+    }
+}

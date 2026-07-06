@@ -96,7 +96,7 @@
           padding: 40px;
           width: 100%;
           max-width: 440px;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+          box-shadow: 0 20px 50px rgba(0,0,0,0.05);
           position: relative;
           z-index: 5;
         }
@@ -104,11 +104,6 @@
         .login-logo {
           text-align: center;
           margin-bottom: 32px;
-        }
-        .login-logo .logo-mark {
-          font-size: 2.5rem;
-          margin-bottom: 6px;
-          display: inline-block;
         }
         .login-logo h1 { font-size: 1.85rem; font-weight: 800; color: var(--text-primary); }
         .login-logo p { font-size: 0.9rem; color: var(--text-secondary); margin-top: 4px; }
@@ -137,7 +132,7 @@
         }
         .login-tab.active {
           background-color: var(--amber);
-          color: #0b0f19;
+          color: #ffffff;
         }
 
         .tab-pane { display: none; }
@@ -155,12 +150,12 @@
         .form-group { display: flex; flex-direction: column; gap: 8px; }
         .form-label { font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
         .form-control { width: 100%; background-color: var(--bg-main); border: 1px solid var(--border); border-radius: 12px; color: var(--text-primary); padding: 12px 16px; font-size: 0.95rem; outline: none; font-family: var(--font-family); transition: var(--transition); }
-        .form-control:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+        .form-control:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(217,119,6,0.15); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
         .btn-primary { 
           background-color: var(--amber); 
-          color: #0b0f19; 
+          color: #ffffff; 
           padding: 14px;
           border-radius: 99px;
           font-size: 1rem;
@@ -177,31 +172,107 @@
         .btn-primary:hover { background-color: var(--amber-hover); }
 
         .alert { padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; margin-bottom: 20px; font-weight: 500; }
-        .alert-danger { background-color: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239,68,68,0.25); }
-        .alert-success { background-color: var(--success-bg); color: var(--success); border: 1px solid rgba(34,197,94,0.25); }
+        .alert-danger { background-color: var(--danger-bg); color: var(--danger); border: 1px solid rgba(220,38,38,0.25); }
+        .alert-success { background-color: var(--success-bg); color: var(--success); border: 1px solid rgba(5,150,105,0.25); }
 
-        .forgot-link { font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; text-align: right; margin-top: -4px; align-self: flex-end; }
+        .forgot-link { font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; text-align: right; margin-top: -4px; align-self: flex-end; background: none; border: none; font-family: var(--font-family); }
         .forgot-link:hover { color: var(--amber); }
 
         .bottom-toggle-text { text-align: center; margin-top: 24px; font-size: 0.88rem; color: var(--text-secondary); }
         .bottom-toggle-text span { color: var(--amber); font-weight: 600; cursor: pointer; transition: var(--transition); }
         .bottom-toggle-text span:hover { color: var(--amber-hover); text-decoration: underline; }
 
-        /* ---- POPUP RECOVERY MODALS ---- */
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(5,7,12,0.8); backdrop-filter: blur(4px); z-index: 500; display: none; align-items: center; justify-content: center; padding: 16px; }
+        /* ============================================================
+           FORGOT PASSWORD STYLED BOX & MODAL SYSTEM COMPONENTS
+           ============================================================ */
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(11,15,25,0.4); backdrop-filter: blur(8px); z-index: 500; display: none; align-items: center; justify-content: center; padding: 16px; transition: opacity 0.3s ease; }
         .modal-overlay.open { display: flex; }
-        .modal-box { background-color: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-xl); width: 100%; max-width: 460px; padding: 32px; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 12px; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
-        .modal-close { position: absolute; top: 24px; right: 24px; background: var(--bg-pill); border: none; color: var(--text-secondary); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-        .modal-close:hover { color: var(--text-primary); background-color: var(--border); }
+        .modal-box { background-color: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-xl); width: 100%; max-width: 450px; padding: 40px; position: relative; box-shadow: 0 25px 60px -15px rgba(0,0,0,0.12); transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-overlay.open .modal-box { transform: scale(1); }
+        .modal-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 6px; color: var(--text-primary); display: flex; align-items: center; justify-content: center; gap: 8px; text-align: center; }
+        .modal-close { position: absolute; top: 24px; right: 24px; background: var(--bg-main); border: none; color: var(--text-secondary); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: var(--transition); }
+        .modal-close:hover { color: var(--text-primary); background-color: var(--bg-pill); }
+
+        .modal-box .graphic-container { background-color: var(--amber-faint); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px auto; color: var(--amber); border: 1px solid rgba(219,119,6,0.15); }
 
         .modal-step { display: none; }
-        .modal-step.active { display: flex; flex-direction: column; gap: 16px; }
+        .modal-step.active { display: flex; flex-direction: column; gap: 18px; animation: fadeInStep 0.4s ease forwards; }
+
+        @keyframes fadeInStep {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================================
+           GLOBAL SYSTEM NOTIFICATION CONTAINER & LIVE TOAST BANNER
+           ============================================================ */
+        .global-notification-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 380px;
+            width: calc(100% - 48px);
+        }
+
+        .alert-toast {
+            background: #FFFFFF;
+            border-left: 4px solid var(--success);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            border: 1px solid var(--border);
+            animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: all 0.3s ease;
+        }
+
+        .alert-toast-content h4 {
+            margin: 0 0 4px 0;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .alert-toast-content p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        @keyframes toastSlideIn {
+            from { transform: translateX(110%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
 <div class="bg-doodle-overlay"></div>
+
+<div class="global-notification-container" id="globalNotificationWrapper">
+    <div class="alert-toast" id="toastAccountSuccess" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div class="alert-toast-content">
+            <h4>Profile Initialized</h4>
+            <p>New user account has been registered successfully. Welcome to Cabin Putih!</p>
+        </div>
+    </div>
+
+    <div class="alert-toast" id="toastPasswordSuccess" style="display: none; border-left-color: var(--amber);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div class="alert-toast-content">
+            <h4>Security Configured</h4>
+            <p>Your access credentials have been safely restructured in our database records.</p>
+        </div>
+    </div>
+</div>
 
 <a href="index.html" class="btn-back-home">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
@@ -291,12 +362,15 @@
 
 <div class="modal-overlay" id="forgotModal">
     <div class="modal-box">
+        <div class="graphic-container">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
         <div class="modal-title">Password Recovery</div>
         <button class="modal-close" onclick="closeForgotModal()">&times;</button>
         <div id="modalAlertBox"></div>
 
         <div class="modal-step active" id="reset-step-1">
-            <p style="font-size:0.9rem; color:var(--text-secondary);">Provide your account parameters to authenticate identity routing permissions.</p>
+            <p style="font-size:0.88rem; color:var(--text-secondary); text-align: center; margin-bottom: 6px; line-height: 1.5;">Provide your account parameters to authenticate identity routing permissions.</p>
             <div class="form-group"><label class="form-label">First Name</label><input type="text" id="forgotFirst" class="form-control" placeholder="e.g. MUHAMMAD AMIR HAKIMI" required></div>
             <div class="form-group"><label class="form-label">Last Name</label><input type="text" id="forgotLast" class="form-control" placeholder="e.g. ABD RAHMAN" required></div>
             <div class="form-group"><label class="form-label">Phone Number</label><input type="text" id="forgotPhone" class="form-control" placeholder="e.g. 0127865671" required></div>
@@ -304,7 +378,7 @@
         </div>
 
         <div class="modal-step" id="reset-step-2">
-            <p style="font-size:0.9rem; color:var(--text-secondary); margin-bottom: 4px;">Identity verified! Enter your new custom password mapping handle below.</p>
+            <p style="font-size:0.88rem; color:var(--text-secondary); text-align: center; margin-bottom: 6px; line-height: 1.5;">Identity verified! Enter your new custom password mapping handle below.</p>
             <div class="form-group"><label class="form-label">New Password</label><input type="password" id="forgotNewPass" class="form-control" placeholder="Min. 6 characters" required></div>
             <div class="form-group"><label class="form-label">Confirm New Password</label><input type="password" id="forgotNewPassConfirm" class="form-control" placeholder="Repeat choice" required></div>
             <button type="button" class="btn-primary" style="margin-top: 8px;" onclick="commitUserPasswordReset()">Save New Password</button>
@@ -467,7 +541,6 @@ async function handleRegistration(e) {
     }
 
     try {
-        // These keys must be exactly lowercase to bind correctly with ORDS parameters
         const details = { 'first_name': first, 'last_name': last, 'phone': phone, 'password': pass };
         const formBody = Object.keys(details).map(key => encodeURIComponent(key) + '=' + encodeURIComponent(details[key])).join('&');
 
@@ -481,6 +554,12 @@ async function handleRegistration(e) {
         const data = await response.json();
 
         if (data.status === 'success') {
+            // Display system Account Creation toast alert overlay
+            const accountToast = document.getElementById('toastAccountSuccess');
+            if (accountToast) {
+                accountToast.style.display = 'flex';
+                setTimeout(() => { accountToast.style.display = 'none'; }, 5500);
+            }
             triggerAlertMessage('alertBox', 'success', 'Account created! You can now sign in.');
             switchTab('customer');
         } else {
@@ -576,6 +655,13 @@ async function commitUserPasswordReset() {
         if (data.status === 'success') {
             sessionStorage.removeItem('reset_target_phone');
             closeForgotModal();
+
+            // Display password reset modification success toast banner
+            const resetToast = document.getElementById('toastPasswordSuccess');
+            if (resetToast) {
+                resetToast.style.display = 'flex';
+                setTimeout(() => { resetToast.style.display = 'none'; }, 5500);
+            }
             triggerAlertMessage('alertBox', 'success', 'Password updated successfully! Sign in with your new credentials.');
         } else {
             triggerAlertMessage('modalAlertBox', 'error', data.message || 'Failed to update database schema entries.');
