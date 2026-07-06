@@ -232,9 +232,15 @@
                 <button type="button" class="modal-close-btn" onclick="closeAddStaffModal()">&times;</button>
             </div>
             <form onsubmit="handleCreateStaffSubmit(event)">
-                <div class="form-group">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" id="txtNewStaffName" class="form-control" required placeholder="e.g. Ahmad bin Ali">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        <input type="text" id="txtNewStaffFirstName" class="form-control" required placeholder="e.g. Ahmad">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" id="txtNewStaffLastName" class="form-control" required placeholder="e.g. bin Ali">
+                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
